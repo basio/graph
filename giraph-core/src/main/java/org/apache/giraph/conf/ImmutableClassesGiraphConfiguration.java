@@ -41,6 +41,7 @@ import org.apache.giraph.factories.VertexIdFactory;
 import org.apache.giraph.factories.VertexValueFactory;
 import org.apache.giraph.graph.Computation;
 import org.apache.giraph.graph.Language;
+import org.apache.giraph.graph.MapperObserver;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.graph.VertexResolver;
 import org.apache.giraph.graph.VertexValueCombiner;
@@ -756,6 +757,20 @@ public class ImmutableClassesGiraphConfiguration<I extends WritableComparable,
   }
 
   /**
+   * Create array of MapperObservers.
+   *
+   * @return Instantiated array of MapperObservers.
+   */
+  public MapperObserver[] createMapperObservers() {
+    Class<? extends MapperObserver>[] klasses = getMapperObserverClasses();
+    MapperObserver[] objects = new MapperObserver[klasses.length];
+    for (int i = 0; i < klasses.length; ++i) {
+      objects[i] = ReflectionUtils.newInstance(klasses[i], this);
+    }
+    return objects;
+  }
+
+  /**
    * Create job observer
    *
    * @return GiraphJobObserver set in configuration.
@@ -1217,6 +1232,20 @@ public class ImmutableClassesGiraphConfiguration<I extends WritableComparable,
       return new UnsafeByteArrayInputStream(buf, off, length);
     } else {
       return new ExtendedByteArrayDataInput(buf, off, length);
+    }
+  }
+
+  /**
+   * Create an extended data input (can be subclassed)
+   *
+   * @param buf Buffer to use for the input
+   * @return ExtendedDataInput object
+   */
+  public ExtendedDataInput createExtendedDataInput(byte[] buf) {
+    if (useUnsafeSerialization) {
+      return new UnsafeByteArrayInputStream(buf);
+    } else {
+      return new ExtendedByteArrayDataInput(buf);
     }
   }
 
