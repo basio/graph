@@ -87,6 +87,7 @@ public class MasterThread<I extends WritableComparable, V extends Writable,
    */
   @Override
   public void run() {
+LOG.info("run");
     // Algorithm:
     // 1. Become the master
     // 2. If desired, restart from a manual checkpoint
@@ -126,7 +127,8 @@ public class MasterThread<I extends WritableComparable, V extends Writable,
                 startSuperstepMillis;
             superstepSecsMap.put(cachedSuperstep,
                 superstepMillis / 1000.0d);
-            if (LOG.isInfoEnabled()) {
+            /*if (LOG.isInfoEnabled())*/ 
+		{
               LOG.info("masterThread: Coordination of superstep " +
                   cachedSuperstep + " took " +
                   superstepMillis / 1000.0d +
