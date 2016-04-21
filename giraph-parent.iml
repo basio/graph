@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_5" inherit-compiler-output="false">
+    <output url="file://$MODULE_DIR$/target/classes" />
+    <output-test url="file://$MODULE_DIR$/target/test-classes" />
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/target" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.hadoop:hadoop-common:SET_HADOOP_VERSION_USING_MVN_DASH_D_OPTION" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.hadoop:hadoop-mapreduce-client-common:SET_HADOOP_VERSION_USING_MVN_DASH_D_OPTION" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="Maven: org.apache.hadoop:hadoop-mapreduce-client-core:SET_HADOOP_VERSION_USING_MVN_DASH_D_OPTION" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-yarn-common:SET_HADOOP_VERSION_USING_MVN_DASH_D_OPTION" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-yarn-server-common:SET_HADOOP_VERSION_USING_MVN_DASH_D_OPTION" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-yarn-server-resourcemanager:SET_HADOOP_VERSION_USING_MVN_DASH_D_OPTION" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-yarn-server-nodemanager:SET_HADOOP_VERSION_USING_MVN_DASH_D_OPTION" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-yarn-server-tests:test-jar:tests:SET_HADOOP_VERSION_USING_MVN_DASH_D_OPTION" level="project" />
+  </component>
+</module>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/giraph-block-app/giraph-block-app.iml" filepath="$PROJECT_DIR$/giraph-block-app/giraph-block-app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-core/giraph-core.iml" filepath="$PROJECT_DIR$/giraph-core/giraph-core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-dist/giraph-dist.iml" filepath="$PROJECT_DIR$/giraph-dist/giraph-dist.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-examples/giraph-examples.iml" filepath="$PROJECT_DIR$/giraph-examples/giraph-examples.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-parent.iml" filepath="$PROJECT_DIR$/giraph-parent.iml" />
+    </modules>
+  </component>
+</project>

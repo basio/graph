@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.apache.giraph:giraph-hcatalog:1.2.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/giraph/giraph-hcatalog/1.2.0-SNAPSHOT/giraph-hcatalog-1.2.0-20150623.010653-38.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/giraph/giraph-hcatalog/1.2.0-SNAPSHOT/giraph-hcatalog-1.2.0-20150623.010653-38-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/giraph/giraph-hcatalog/1.2.0-SNAPSHOT/giraph-hcatalog-1.2.0-20150623.010653-38-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

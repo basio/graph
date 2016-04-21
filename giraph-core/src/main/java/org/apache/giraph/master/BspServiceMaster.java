@@ -601,7 +601,7 @@ public class BspServiceMaster<I extends WritableComparable,
   private int createInputSplits(GiraphInputFormat inputFormat,
                                 InputType inputSplitType) {
     ImmutableClassesGiraphConfiguration conf = getConfiguration();
-    String logPrefix = "create" + inputSplitType + "InputSplits";
+    String logPrefix = "create" + inputSplitType + "InputSpli+ts";
     // Only the 'master' should be doing this.  Wait until the number of
     // processes that have reported health exceeds the minimum percentage.
     // If the minimum percentage is not met, fail the job.  Otherwise
