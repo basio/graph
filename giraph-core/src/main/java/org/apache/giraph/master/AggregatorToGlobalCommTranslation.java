@@ -27,10 +27,6 @@ import org.apache.giraph.aggregators.Aggregator;
 import org.apache.giraph.comm.aggregators.AggregatorUtils;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.utils.MasterLoggingAggregator;
-<<<<<<< HEAD
-import org.apache.giraph.utils.WritableUtils;
-=======
->>>>>>> 12f102fb2b0f59ded3222e24cdf689cf289a4f03
 import org.apache.hadoop.io.Writable;
 import org.apache.log4j.Logger;
 
@@ -138,10 +134,10 @@ public class AggregatorToGlobalCommTranslation
       AggregatorReduceOperation<Writable> cleanReduceOp =
           entry.getValue().createReduceOp();
       if (entry.getValue().isPersistent()) {
-        globalComm.registerReducer(
+        globalComm.registerReduce(
             entry.getKey(), cleanReduceOp, value);
       } else {
-        globalComm.registerReducer(
+        globalComm.registerReduce(
             entry.getKey(), cleanReduceOp);
       }
       entry.getValue().setCurrentValue(null);
@@ -158,16 +154,14 @@ public class AggregatorToGlobalCommTranslation
   public <A extends Writable> boolean registerAggregator(String name,
       Class<? extends Aggregator<A>> aggregatorClass) throws
       InstantiationException, IllegalAccessException {
-    registerAggregator(name, aggregatorClass, false);
-    return true;
+    return registerAggregator(name, aggregatorClass, false) != null;
   }
 
   @Override
   public <A extends Writable> boolean registerPersistentAggregator(String name,
       Class<? extends Aggregator<A>> aggregatorClass) throws
       InstantiationException, IllegalAccessException {
-    registerAggregator(name, aggregatorClass, true);
-    return true;
+    return registerAggregator(name, aggregatorClass, true) != null;
   }
 
   @Override
@@ -290,8 +284,7 @@ public class AggregatorToGlobalCommTranslation
     @Override
     public void readFields(DataInput in) throws IOException {
       persistent = in.readBoolean();
-      reduceOp = WritableUtils.createWritable(
-          AggregatorReduceOperation.class, conf);
+      reduceOp = new AggregatorReduceOperation<>();
       reduceOp.readFields(in);
       currentValue = null;
     }

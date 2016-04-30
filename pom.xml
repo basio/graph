@@ -31,12 +31,7 @@ under the License.
   <groupId>org.apache.giraph</groupId>
   <artifactId>giraph-parent</artifactId>
   <packaging>pom</packaging>
-<<<<<<< HEAD
-  <version>1.2.0-SNAPSHOT</version>
-=======
   <version>1.1.0</version>
->>>>>>> 12f102fb2b0f59ded3222e24cdf689cf289a4f03
-
   <name>Apache Giraph Parent</name>
   <url>http://giraph.apache.org/</url>
   <description>Giraph : Large-scale graph processing on Hadoop</description>

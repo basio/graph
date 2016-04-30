@@ -24,11 +24,7 @@ under the License.
   <parent>
     <groupId>org.apache.giraph</groupId>
     <artifactId>giraph-parent</artifactId>
-<<<<<<< HEAD
-    <version>1.2.0-SNAPSHOT</version>
-=======
     <version>1.1.0</version>
->>>>>>> 12f102fb2b0f59ded3222e24cdf689cf289a4f03
   </parent>
   <artifactId>giraph-examples</artifactId>
   <packaging>jar</packaging>
@@ -433,16 +429,8 @@ under the License.
     <dependency>
       <groupId>org.apache.giraph</groupId>
       <artifactId>giraph-core</artifactId>
-<<<<<<< HEAD
-      <version>1.2.0-SNAPSHOT</version>
-=======
       <version>1.1.0</version>
->>>>>>> 12f102fb2b0f59ded3222e24cdf689cf289a4f03
       <type>test-jar</type>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.giraph</groupId>
-      <artifactId>giraph-block-app</artifactId>
     </dependency>
 
     <!-- runtime dependency -->
