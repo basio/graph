@@ -61,7 +61,11 @@
 # Configuration
 export REXSTER_VERSION=2.4.0
 export HADOOP_VERSION=1.0.2
+<<<<<<< HEAD
 export GIRAPH_VERSION=1.2.0-SNAPSHOT
+=======
+export GIRAPH_VERSION=1.1.0
+>>>>>>> 12f102fb2b0f59ded3222e24cdf689cf289a4f03
 export GIRAPH_DIR=/path/to/giraph
 export REXSTER_DIR=/path/to/rexster
 export HADOOP_DIR=/path/to/hadoop

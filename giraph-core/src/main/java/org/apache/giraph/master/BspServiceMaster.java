@@ -214,6 +214,7 @@ public class BspServiceMaster<I extends WritableComparable,
     eventWaitMsecs = conf.getEventWaitMsecs();
     maxSuperstepWaitMsecs = conf.getMaxMasterSuperstepWaitMsecs();
     partitionLongTailMinPrint = PARTITION_LONG_TAIL_MIN_PRINT.get(conf);
+   LOG.info("Creating a master graph paritioner");
     masterGraphPartitioner =
         getGraphPartitionerFactory().createMasterGraphPartitioner();
     if (conf.isJMapHistogramDumpEnabled()) {
@@ -1622,7 +1623,11 @@ public class BspServiceMaster<I extends WritableComparable,
 
     // Collect aggregator values, then run the master.compute() and
     // finally save the aggregator values
+<<<<<<< HEAD
     globalCommHandler.getAggregatorHandler().prepareSuperstep();
+=======
+    globalCommHandler.prepareSuperstep();
+>>>>>>> 12f102fb2b0f59ded3222e24cdf689cf289a4f03
     aggregatorTranslation.prepareSuperstep();
 
     SuperstepClasses superstepClasses =

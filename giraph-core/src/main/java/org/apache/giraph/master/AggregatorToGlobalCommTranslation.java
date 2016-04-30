@@ -27,7 +27,10 @@ import org.apache.giraph.aggregators.Aggregator;
 import org.apache.giraph.comm.aggregators.AggregatorUtils;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.utils.MasterLoggingAggregator;
+<<<<<<< HEAD
 import org.apache.giraph.utils.WritableUtils;
+=======
+>>>>>>> 12f102fb2b0f59ded3222e24cdf689cf289a4f03
 import org.apache.hadoop.io.Writable;
 import org.apache.log4j.Logger;
 
