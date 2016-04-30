@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fc559f9a-332b-4986-a413-61100a8d750f" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/giraph-core/src/main/java/org/apache/giraph/utils/LongPair.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/giraph-examples/src/main/java/fomat/LongEdgeInputFormat.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="giraph-parent.iws" />
