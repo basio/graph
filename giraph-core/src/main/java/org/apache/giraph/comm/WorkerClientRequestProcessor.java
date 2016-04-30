@@ -33,7 +33,8 @@ import java.util.Iterator;
  *
  * @param <I> Vertex index value
  * @param <V> Vertex value
- * @param <E> Edge value
+ * @param
+ * <E> Edge value
  */
 public interface WorkerClientRequestProcessor<I extends WritableComparable,
     V extends Writable, E extends Writable> {
