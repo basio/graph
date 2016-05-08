@@ -39,8 +39,12 @@ public class LongEdgeInputFormat  extends
             @Override
             protected LongPair preprocessLine(Text line) throws IOException {
                 String[] tokens = SEPARATOR.split(line.toString());
+		if(tokens.length==2)
                 return new LongPair(Long.parseLong(tokens[0]),
                         Long.parseLong(tokens[1]));
+		if(tokens.length==1)
+			return new LongPair(Long.parseLong(tokens[0]),Long.parseLong(tokens[0]));
+		return new LongPair((long)1, (long)1);
             }
 
             @Override
