@@ -33,8 +33,8 @@ import java.io.IOException;
  * Demonstrates the basic Pregel shortest paths implementation.
  */
 @Algorithm(
-    name = "NoN",
-    description = "test sending to non neighbour"
+        name = "NoN",
+        description = "test sending to non neighbour"
 )
 
 /**
@@ -45,27 +45,28 @@ import java.io.IOException;
  * @param <E> Edge data
  * @param <M> Message type
  */
-public class NoN extends BasicComputation<
-    LongWritable, DoubleWritable, FloatWritable, DoubleWritable> {
-  /** Class logger */
-  private static final Logger LOG =
-      Logger.getLogger(NoN.class);
+public class NoNF extends        BasicComputation<
+        LongWritable, DoubleWritable, DoubleWritable, FloatWritable> {
+
+{
+    /** Class logger */
+    private static final Logger LOG =
+            Logger.getLogger(NoNF.class);
 
     @Override
-  public void compute(
-      Vertex<LongWritable, DoubleWritable, FloatWritable> vertex,
-      Iterable<DoubleWritable> messages) throws IOException {
+    public void compute ( Vertex<LongWritable, DoubleWritable, DoubleWritable> vertex,
+    Iterable<FloatWritable> messages)  throws IOException {
         if (getSuperstep() >= 1) {
             double i=0;
-            for (DoubleWritable message : messages) {
+            for (FloatWritable message : messages) {
                 i++;
             }
             vertex.setValue(new DoubleWritable(i));
-            }
+        }
 
         else {
             sendMessage(new LongWritable(1), new DoubleWritable(1));
             vertex.voteToHalt();
         }
-  }
+    }
 }
