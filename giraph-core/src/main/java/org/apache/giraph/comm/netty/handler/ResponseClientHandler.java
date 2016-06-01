@@ -76,6 +76,7 @@ public class ResponseClientHandler extends ChannelInboundHandlerAdapter {
       senderId = buf.readInt();
       requestId = buf.readLong();
       response = buf.readByte();
+      LOG.info("BASIO  Received message from"+senderId+ " to "+requestId+" ");
     } catch (IndexOutOfBoundsException e) {
       throw new IllegalStateException(
           "channelRead: Got IndexOutOfBoundsException ", e);
@@ -112,7 +113,12 @@ public class ResponseClientHandler extends ChannelInboundHandlerAdapter {
         LOG.debug("messageReceived: Completed (taskId = " + senderId + ")" +
             requestInfo + ".  Waiting on " + workerIdOutstandingRequestMap
             .size() + " requests");
+
       }
+        LOG.info("BASIO messageReceived: Completed (taskId = " + senderId + ")" +
+                requestInfo + ".  Waiting on " + workerIdOutstandingRequestMap
+                .size() + " requests");
+
     }
 
     // Help NettyClient#waitSomeRequests() to finish faster

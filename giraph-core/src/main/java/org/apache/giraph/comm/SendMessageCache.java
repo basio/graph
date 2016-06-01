@@ -149,10 +149,10 @@ public class SendMessageCache<I extends WritableComparable, M extends Writable>
       getServiceWorker().getVertexPartitionOwner(destVertexId);
     WorkerInfo workerInfo = owner.getWorkerInfo();
     final int partitionId = owner.getPartitionId();
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("sendMessageRequest: Send bytes (" + message.toString() +
+    //if (LOG.isTraceEnabled()) {
+      LOG.info("BASIO sendMessageRequest: Send bytes (" + message.toString() +
         ") to " + destVertexId + " on worker " + workerInfo);
-    }
+    //}
     ++totalMsgsSentInSuperstep;
     // Add the message to the cache
     int workerMessageSize = addMessage(
