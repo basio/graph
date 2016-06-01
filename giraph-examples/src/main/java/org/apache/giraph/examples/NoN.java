@@ -61,7 +61,8 @@ public class NoN extends BasicComputation<
                 i++;
             }
             vertex.setValue(new DoubleWritable(i));
-            }
+  vertex.voteToHalt();      
+    }
 
         else {
             sendMessage(new LongWritable(1), new DoubleWritable(1));

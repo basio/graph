@@ -33,7 +33,7 @@ import java.io.IOException;
  * Demonstrates the basic Pregel shortest paths implementation.
  */
 @Algorithm(
-        name = "NoN",
+        name = "NoN-f",
         description = "test sending to non neighbour"
 )
 
@@ -48,7 +48,6 @@ import java.io.IOException;
 public class NoNF extends        BasicComputation<
         LongWritable, DoubleWritable, DoubleWritable, FloatWritable> {
 
-{
     /** Class logger */
     private static final Logger LOG =
             Logger.getLogger(NoNF.class);
@@ -62,10 +61,11 @@ public class NoNF extends        BasicComputation<
                 i++;
             }
             vertex.setValue(new DoubleWritable(i));
-        }
+		vertex.voteToHalt();     
+ }
 
         else {
-            sendMessage(new LongWritable(1), new DoubleWritable(1));
+            sendMessage(new LongWritable(1), new FloatWritable(1));
             vertex.voteToHalt();
         }
     }
