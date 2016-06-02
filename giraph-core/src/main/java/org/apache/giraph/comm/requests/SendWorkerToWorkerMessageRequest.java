@@ -75,6 +75,7 @@ public class SendWorkerToWorkerMessageRequest extends WritableRequest
   @Override
   public void doRequest(
       ServerData<WritableComparable, Writable, Writable> serverData) {
+    LOG.info("BASIO addIncomingWorkerToWorkerMessage");
     serverData.addIncomingWorkerToWorkerMessage(message);
   }
 }
