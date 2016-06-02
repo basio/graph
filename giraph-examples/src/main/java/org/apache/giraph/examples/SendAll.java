@@ -19,19 +19,18 @@ package org.apache.giraph.examples;
 
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.*;
 
 import java.io.IOException;
 
 /**
  * Simple algorithm that computes the max value in the graph.
  */
-public class SendAll extends BasicComputation<IntWritable, IntWritable,
-        NullWritable, IntWritable> {
+public class SendAll extends BasicComputation<
+        LongWritable, DoubleWritable, FloatWritable, DoubleWritable> {
     @Override
-    public void compute(Vertex<IntWritable, IntWritable, NullWritable> vertex,
-                        Iterable<IntWritable> messages) throws IOException {
+    public void compute(Vertex<LongWritable, DoubleWritable, FloatWritable> vertex,
+                        Iterable<DoubleWritable> messages) throws IOException {
         if (getSuperstep() <10) {
             sendMessageToAllEdges(vertex, vertex.getValue());
         }
