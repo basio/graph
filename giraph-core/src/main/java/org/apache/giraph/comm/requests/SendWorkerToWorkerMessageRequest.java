@@ -22,7 +22,14 @@ import org.apache.giraph.comm.ServerData;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.log4j.Logger;
 
+import org.apache.hadoop.io.WritableComparable;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
+import org.apache.giraph.utils.LoggerUtils;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -30,6 +37,9 @@ import java.io.IOException;
 /** Request which sends any Writable message from one worker to another */
 public class SendWorkerToWorkerMessageRequest extends WritableRequest
     implements WorkerRequest<WritableComparable, Writable, Writable> {
+
+
+  private static final Logger LOG = Logger.getLogger(SendWorkerToWorkerMessageRequest.class);
   /** Message sent */
   private Writable message;
 

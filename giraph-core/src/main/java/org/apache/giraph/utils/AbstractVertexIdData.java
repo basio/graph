@@ -55,7 +55,7 @@ public abstract class AbstractVertexIdData<I extends WritableComparable, T>
   @Override
   public void add(I vertexId, T data) {
     try {
-      LOG.info("BASIO vertexId"+ vertexId.)
+      LOG.info("BASIO vertexId"+ vertexId);
       vertexId.write(extendedDataOutput);
       writeData(extendedDataOutput, data);
     } catch (IOException e) {

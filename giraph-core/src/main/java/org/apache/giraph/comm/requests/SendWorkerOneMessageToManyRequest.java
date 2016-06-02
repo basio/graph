@@ -33,8 +33,14 @@ import org.apache.giraph.partition.PartitionOwner;
 import org.apache.giraph.utils.ByteArrayOneMessageToManyIds;
 import org.apache.giraph.utils.ByteArrayVertexIdMessages;
 import org.apache.giraph.utils.VertexIdMessageIterator;
+import org.apache.giraph.worker.BspServiceWorker;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
+import org.apache.giraph.utils.LoggerUtils;
 
 /**
  * Send a collection of ByteArrayOneMessageToManyIds messages to a worker.
@@ -46,6 +52,8 @@ import org.apache.hadoop.io.WritableComparable;
 public class SendWorkerOneMessageToManyRequest<I extends WritableComparable,
     M extends Writable> extends WritableRequest<I, Writable, Writable>
     implements WorkerRequest<I, Writable, Writable> {
+
+  private static final Logger LOG = Logger.getLogger(SendWorkerOneMessageToManyRequest.class);
   /** ByteArrayOneMessageToManyIds encoding of vertexId & messages */
   protected ByteArrayOneMessageToManyIds<I, M> oneMessageToManyIds;
 
