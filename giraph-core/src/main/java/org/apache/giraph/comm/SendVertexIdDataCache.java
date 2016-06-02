@@ -72,6 +72,7 @@ public abstract class SendVertexIdDataCache<I extends WritableComparable, T,
    */
   public int addData(WorkerInfo workerInfo,
                      int partitionId, I destVertexId, T data) {
+    LOG.info("BASIO addData");
     // Get the data collection
     VertexIdData<I, T> partitionData =
         getPartitionData(workerInfo, partitionId);

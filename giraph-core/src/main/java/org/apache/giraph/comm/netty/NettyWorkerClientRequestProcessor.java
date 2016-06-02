@@ -178,10 +178,10 @@ public class NettyWorkerClientRequestProcessor<I extends WritableComparable,
   @Override
   public void sendPartitionRequest(WorkerInfo workerInfo,
                                    Partition<I, V, E> partition) {
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("sendVertexRequest: Sending to " + workerInfo +
+   // if (LOG.isTraceEnabled()) {
+      LOG.info("BASIO sendVertexRequest: Sending to " + workerInfo +
           ", with partition " + partition);
-    }
+    //}
 
     WritableRequest vertexRequest = new SendVertexRequest<I, V, E>(partition);
     doRequest(workerInfo, vertexRequest);
@@ -190,6 +190,9 @@ public class NettyWorkerClientRequestProcessor<I extends WritableComparable,
     if (serviceWorker.getSuperstep() != BspService.INPUT_SUPERSTEP) {
       sendPartitionMessages(workerInfo, partition);
     }
+
+    LOG.info("BASIO sendVertexRequest: done Sending to " + workerInfo +
+            ", with partition " + partition);
   }
 
   /**

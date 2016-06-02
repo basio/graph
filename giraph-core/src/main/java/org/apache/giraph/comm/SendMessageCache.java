@@ -160,6 +160,7 @@ public class SendMessageCache<I extends WritableComparable, M extends Writable>
     // Send a request if the cache of outgoing message to
     // the remote worker 'workerInfo' is full enough to be flushed
     if (workerMessageSize >= maxMessagesSizePerWorker) {
+      LOG.info("BASIO sendMessageBatch");
       PairList<Integer, VertexIdMessages<I, M>>
         workerMessages = removeWorkerMessages(workerInfo);
       WritableRequest writableRequest =
