@@ -19,7 +19,9 @@
 package org.apache.giraph.utils;
 
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
+import org.apache.giraph.worker.BspServiceWorker;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.log4j.Logger;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -37,6 +39,8 @@ import static org.apache.giraph.utils.ByteUtils.SIZE_OF_INT;
 @SuppressWarnings("unchecked")
 public abstract class AbstractVertexIdData<I extends WritableComparable, T>
   implements VertexIdData<I, T> {
+
+  private static final Logger LOG = Logger.getLogger(AbstractVertexIdData.class);
   /** Extended data output */
   protected ExtendedDataOutput extendedDataOutput;
   /** Configuration */

@@ -23,7 +23,8 @@ import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.utils.VertexIdData;
 import org.apache.giraph.worker.WorkerInfo;
 import org.apache.hadoop.io.WritableComparable;
-
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import javax.annotation.concurrent.NotThreadSafe;
 
 /**
@@ -38,6 +39,8 @@ import javax.annotation.concurrent.NotThreadSafe;
 @SuppressWarnings("unchecked")
 public abstract class SendVertexIdDataCache<I extends WritableComparable, T,
     B extends VertexIdData<I, T>> extends SendDataCache<B> {
+
+  private static final Logger LOG = Logger.getLogger(SendVertexIdDataCache.class);
   /**
    * Constructor.
    *
