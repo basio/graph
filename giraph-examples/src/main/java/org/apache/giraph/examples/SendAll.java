@@ -28,13 +28,18 @@ import java.io.IOException;
  */
 public class SendAll extends BasicComputation<
         LongWritable, DoubleWritable, FloatWritable, DoubleWritable> {
+
+ private static final Logger LOG =
+      Logger.getLogger(SendAll.class);
     @Override
     public void compute(Vertex<LongWritable, DoubleWritable, FloatWritable> vertex,
                         Iterable<DoubleWritable> messages) throws IOException {
-        if (getSuperstep() <10) {
+        LOG.info("BASIO start vertex compute "+vertex.getId());
+	if (getSuperstep() <10) {
             sendMessageToAllEdges(vertex, vertex.getValue());
         }
         else
         vertex.voteToHalt();
+	LOG.info("BASIO end vertex compute "+vertex.getId());
     }
 }

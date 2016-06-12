@@ -145,7 +145,8 @@ public class SendWorkerOneMessageToManyRequest<I extends WritableComparable,
             idMsgs.initialize(initialSize);
             partitionIdMsgs.put(partitionId, idMsgs);
           }
-          idMsgs.add(vertexId, msg);
+           LOG.info("BASIO messageRecived: to "+ vertexId.toString());
+		idMsgs.add(vertexId, msg);
         }
 
         // Read ByteArrayVertexIdMessages and write to message store
