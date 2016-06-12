@@ -4,28 +4,31 @@ import org.apache.giraph.io.EdgeReader;
 import org.apache.giraph.utils.IntPair;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
+import java.io.IOException;
+import java.util.regex.Pattern;
 /**
  * Created by khalefa on 6/12/2016.
  */
 public class GTgraphInputFormat  extends
-            TextEdgeInputFormat<LongWritable, IntWritable> {
+            TextEdgeInputFormat<LongWritable, FloatWritable> {
         /** Splitter for endpoints */
         private static final Pattern SEPARATOR = Pattern.compile("[\t ]");
 
         @Override
-        public EdgeReader<LongWritable, IntWritable> createEdgeReader(
+        public EdgeReader<LongWritable, FloatWritable> createEdgeReader(
                 InputSplit split, TaskAttemptContext context) throws IOException {
             return new org.apache.giraph.io.formats.GTgraphInputFormat.GTgraphEdgeReader();
         }
         class Edge {
             public long from;
             public long to;
-            public int weight;
+            public float weight;
         }
         /**
          * {@link org.apache.giraph.io.EdgeReader} associated with
@@ -44,8 +47,13 @@ public class GTgraphInputFormat  extends
                 e.weight=Integer.valueOf(tokens[3]);
 
                 return e;}
-                else return null;
+                else 
+{			Edge e=new Edge();
+			e.from=e.to=-1;
+			e.weight=0;
+			return e;
             }
+}
 
             @Override
             protected LongWritable getSourceVertexId(Edge edge)
@@ -60,10 +68,11 @@ public class GTgraphInputFormat  extends
             }
 
             @Override
-            protected IntWritable getValue(Edge edge) throws IOException {
-                return new IntWritable(edge.weight);
+            protected FloatWritable getValue(Edge edge) throws IOException {
+                return new FloatWritable(edge.weight);
             }
         }
     }
+
 
 

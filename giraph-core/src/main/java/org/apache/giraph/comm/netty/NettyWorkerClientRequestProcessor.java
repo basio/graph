@@ -130,8 +130,8 @@ public class NettyWorkerClientRequestProcessor<I extends WritableComparable,
     sendPartitionCache =
         new SendPartitionCache<I, V, E>(conf, serviceWorker);
     sendEdgeCache = new SendEdgeCache<I, E>(conf, serviceWorker);
-    maxMessagesSizePerWorker =
-        GiraphConfiguration.MAX_MSG_REQUEST_SIZE.get(conf);
+    //maxMessagesSizePerWorker =
+      //  GiraphConfiguration.MAX_MSG_REQUEST_SIZE.get(conf);
     maxMessagesSizePerWorker=0; //Always push the messages
     maxVerticesSizePerWorker =
         GiraphConfiguration.MAX_VERTEX_REQUEST_SIZE.get(conf);
