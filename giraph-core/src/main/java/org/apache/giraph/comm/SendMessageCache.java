@@ -159,9 +159,10 @@ public class SendMessageCache<I extends WritableComparable, M extends Writable>
       workerInfo, partitionId, destVertexId, message);
     // Send a request if the cache of outgoing message to
     // the remote worker 'workerInfo' is full enough to be flushed
-   // if (workerMessageSize >= maxMessagesSizePerWorker) 
+    boolean forced=true;
+    if (forced==true)
 	{
-      LOG.info("BASIO sendMessageBatch");
+      LOG.info("Force BASIO sendMessageBatch");
       PairList<Integer, VertexIdMessages<I, M>>
         workerMessages = removeWorkerMessages(workerInfo);
       WritableRequest writableRequest =
@@ -170,6 +171,17 @@ public class SendMessageCache<I extends WritableComparable, M extends Writable>
       clientProcessor.doRequest(workerInfo, writableRequest);
       // Notify sending
       getServiceWorker().getGraphTaskManager().notifySentMessages();
+    } else {
+      if(workerMessageSize >= maxMessagesSizePerWorker){
+        PairList<Integer, VertexIdMessages<I, M>>
+                workerMessages = removeWorkerMessages(workerInfo);
+        WritableRequest writableRequest =
+                new SendWorkerMessagesRequest<I, M>(workerMessages);
+        totalMsgBytesSentInSuperstep += writableRequest.getSerializedSize();
+        clientProcessor.doRequest(workerInfo, writableRequest);
+        // Notify sending
+        getServiceWorker().getGraphTaskManager().notifySentMessages();
+      }
     }
   }
 

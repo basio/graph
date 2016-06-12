@@ -76,7 +76,7 @@ public class ResponseClientHandler extends ChannelInboundHandlerAdapter {
       senderId = buf.readInt();
       requestId = buf.readLong();
       response = buf.readByte();
-      LOG.info("BASIO  Received message from"+senderId+ " to "+requestId+" ");
+      LOG.info("BASIO  Received message from "+senderId+ " to "+requestId+" ");
     } catch (IndexOutOfBoundsException e) {
       throw new IllegalStateException(
           "channelRead: Got IndexOutOfBoundsException ", e);

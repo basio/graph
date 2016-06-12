@@ -67,7 +67,7 @@ public class SimplePageRankComputation extends BasicComputation<LongWritable,
   public void compute(
       Vertex<LongWritable, DoubleWritable, FloatWritable> vertex,
       Iterable<DoubleWritable> messages) throws IOException {
-LOG.info(vertex.getId()       +" start vertex COMPUTE BASIO");
+LOG.info("BASIO vertex start compute "+vertex.getId());
     if (getSuperstep() >= 1) {
       double sum = 0;
       for (DoubleWritable message : messages) {
@@ -91,9 +91,8 @@ LOG.info(vertex.getId()       +" start vertex COMPUTE BASIO");
     } else {
       vertex.voteToHalt();
     }
-    LOG.info(vertex.getId()
-            +"end vertex COMPUTE BASIO");
 
+    LOG.info("BASIO vertex end compute "+vertex.getId());
   }
 
   /**
