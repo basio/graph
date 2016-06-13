@@ -54,6 +54,8 @@ public class DefaultVertex<I extends WritableComparable,
   /** If true, do not do anymore computation on this vertex. */
   private boolean halt;
 
+  private int partid;
+
   @Override
   public void initialize(I id, V value, Iterable<Edge<I, E>> edges) {
     this.id = id;
@@ -85,6 +87,13 @@ public class DefaultVertex<I extends WritableComparable,
     return id;
   }
 
+  @Override
+  public String getFullId() {
+    return partid+"-"+id;
+  }
+  public void setPartId(int partid){
+      this.partid=partid;
+  }
   @Override
   public V getValue() {
     return value;

@@ -230,6 +230,7 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
     synchronized (partition) {
       for (Vertex<I, V, E> vertex : partition) {
         Iterable<M1> messages = messageStore.getVertexMessages(vertex.getId());
+        vertex.setPartId(partition.getId());
         if (vertex.isHalted() && !Iterables.isEmpty(messages)) {
           vertex.wakeUp();
         }

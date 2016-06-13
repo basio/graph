@@ -62,6 +62,8 @@ public interface Vertex<I extends WritableComparable,
    */
   I getId();
 
+  void setPartId(int partid);
+   String getFullId();
   /**
    * Get the vertex value (data stored with vertex)
    *

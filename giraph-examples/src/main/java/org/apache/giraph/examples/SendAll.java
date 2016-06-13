@@ -34,12 +34,12 @@ public class SendAll extends BasicComputation<
     @Override
     public void compute(Vertex<LongWritable, DoubleWritable, FloatWritable> vertex,
                         Iterable<DoubleWritable> messages) throws IOException {
-        LOG.info("BASIO start vertex compute "+vertex.getId());
+        LOG.info("BASIO start vertex "+getWorkerContext().getMyWorkerIndex()+"--"+vertex.getFullId()+ "  compute in superstep "+getSuperstep());
 	if (getSuperstep() <10) {
             sendMessageToAllEdges(vertex, vertex.getValue());
         }
         else
         vertex.voteToHalt();
-	LOG.info("BASIO end vertex compute "+vertex.getId());
+	LOG.info("BASIO end vertex compute "+vertex.getFullId());
     }
 }
