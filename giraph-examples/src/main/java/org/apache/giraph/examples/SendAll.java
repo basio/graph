@@ -20,6 +20,7 @@ package org.apache.giraph.examples;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.*;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
