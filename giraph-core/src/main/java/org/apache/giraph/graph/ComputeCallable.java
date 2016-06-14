@@ -236,9 +236,9 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
         }
         if (!vertex.isHalted()) {
           context.progress();
-          LOG.info("BASIO start vertex "+getWorkerContext().getMyWorkerIndex()+"--"+vertex.getFullId()+ "  compute in superstep "+getSuperstep());
+          LOG.info("BASIO start vertex "+vertex.getFullId()+ "  compute in superstep "+graphState.getSuperstep());
           computation.compute(vertex, messages);
-          LOG.info("BASIO end vertex compute "+vertex.getFullId());
+          LOG.info("BASIO end vertex "+vertex.getFullId()+ " compute in superstep "+ graphState.getSuperstep());
 
           // Need to unwrap the mutated edges (possibly)
           vertex.unwrapMutableEdges();
@@ -253,7 +253,7 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
         }
         if (vertex.isHalted()) {
           partitionStats.incrFinishedVertexCount();
-          LOG.info("BASIO vertex "+vertex.getFullId()+ "  is halted in superstep "+getSuperstep());
+          LOG.info("BASIO halt vertex "+vertex.getFullId()+" comopute  in superstep "+graphState.getSuperstep());
 
         }
         // Remove the messages now that the vertex has finished computation
