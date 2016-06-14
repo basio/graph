@@ -24,6 +24,12 @@ import org.apache.giraph.utils.ByteArrayVertexIdMessages;
 import org.apache.giraph.utils.PairList;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
+import org.apache.giraph.utils.LoggerUtils;
+
 
 import java.io.IOException;
 
@@ -37,6 +43,8 @@ import java.io.IOException;
 public class SendWorkerMessagesRequest<I extends WritableComparable,
     M extends Writable> extends SendWorkerDataRequest<I, M,
     VertexIdMessages<I, M>> {
+  private static final Logger LOG = Logger.getLogger(SendWorkerMessagesRequest.class);
+
 
   /** Default constructor */
   public SendWorkerMessagesRequest() {
@@ -68,6 +76,7 @@ public class SendWorkerMessagesRequest<I extends WritableComparable,
   public void doRequest(ServerData serverData) {
     PairList<Integer, VertexIdMessages<I, M>>.Iterator
         iterator = partitionVertexData.getIterator();
+    LOG.info("BASIO doRequest: to ");
     while (iterator.hasNext()) {
       iterator.next();
       try {
