@@ -76,7 +76,7 @@ public class SendWorkerMessagesRequest<I extends WritableComparable,
   public void doRequest(ServerData serverData) {
     PairList<Integer, VertexIdMessages<I, M>>.Iterator
         iterator = partitionVertexData.getIterator();
-    LOG.info("BASIO doRequest: to ");
+    LOG.info("BASIO doRequest "+ serverData.getIncomingMessageStore());
     while (iterator.hasNext()) {
       iterator.next();
       try {

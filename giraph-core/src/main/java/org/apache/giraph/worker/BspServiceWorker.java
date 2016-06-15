@@ -946,7 +946,7 @@ public class BspServiceWorker<I extends WritableComparable,
         ", Superstep=" + getSuperstep());
     incrCachedSuperstep();
     getConfiguration().updateSuperstepClasses(superstepClasses);
-
+    LOG.info("BASIO finishSuperStep superstep "+getSuperstep());
     return new FinishedSuperstepStats(
         localVertices,
         globalStats.getHaltComputation(),
