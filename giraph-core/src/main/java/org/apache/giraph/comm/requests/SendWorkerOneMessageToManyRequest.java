@@ -145,7 +145,9 @@ public class SendWorkerOneMessageToManyRequest<I extends WritableComparable,
             idMsgs.initialize(initialSize);
             partitionIdMsgs.put(partitionId, idMsgs);
           }
-           LOG.info("BASIO messageRecived: to "+ vertexId.toString());
+          if(LOG.isTraceEnabled()) {
+            LOG.trace("BASIO messageRecived: to " + vertexId.toString());
+          }
 		idMsgs.add(vertexId, msg);
         }
 

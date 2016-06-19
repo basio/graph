@@ -60,7 +60,6 @@ public class SimpleShortestPathsComputation extends BasicComputation<
   public void compute(
       Vertex<LongWritable, DoubleWritable, FloatWritable> vertex,
       Iterable<DoubleWritable> messages) throws IOException {
-   LOG.info("BASIO start vertex compute "+vertex.getId());
     if (getSuperstep() == 0) {
       vertex.setValue(new DoubleWritable(Double.MAX_VALUE));
     }
@@ -84,7 +83,6 @@ public class SimpleShortestPathsComputation extends BasicComputation<
       }
     }
     vertex.voteToHalt();
-      LOG.info("BASIO end vertex compute "+vertex.getId());
 
   }
 }
