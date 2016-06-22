@@ -48,6 +48,7 @@ import java.io.IOException;
 )
 public class ConnectedComponentsComputation extends
     BasicComputation<IntWritable, IntWritable, NullWritable, IntWritable> {
+
   /**
    * Propagates the smallest vertex id to all neighbors. Will always choose to
    * halt and only reactivate if a smaller id has been sent to it.
