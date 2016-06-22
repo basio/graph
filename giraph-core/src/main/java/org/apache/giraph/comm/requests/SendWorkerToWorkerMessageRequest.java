@@ -86,7 +86,7 @@ public class SendWorkerToWorkerMessageRequest extends WritableRequest
   public void doRequest(
       ServerData<WritableComparable, Writable, Writable> serverData) {
     if(LOG.isTraceEnabled()) {
-      LOG.info("BASIO addIncomingWorkerToWorkerMessage");
+      LOG.trace("BASIO addIncomingWorkerToWorkerMessage");
     }
     serverData.addIncomingWorkerToWorkerMessage(message);
   }

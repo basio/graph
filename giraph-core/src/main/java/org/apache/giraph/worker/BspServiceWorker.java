@@ -113,6 +113,7 @@ import org.apache.zookeeper.Watcher.Event.EventType;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.Stat;
 import org.json.JSONArray;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -840,7 +841,7 @@ public class BspServiceWorker<I extends WritableComparable,
 
     if (LOG.isInfoEnabled()) {
       LOG.info("startSuperstep: " + masterInfo);
-      LOG.info("startSuperstep: Ready for computation on superstep " +
+      LOG.info("BASIO startSuperstep: Ready for computation on superstep " +
           getSuperstep() + " since worker " +
           "selection and vertex range assignments are done in " +
           addressesAndPartitionsPath);
@@ -892,6 +893,7 @@ public class BspServiceWorker<I extends WritableComparable,
       workerSentMessageBytes += partitionStats.getMessageBytesSentCount();
       localVertices += partitionStats.getVertexCount();
     }
+    long superstep_id=getSuperstep();
 
     if (getSuperstep() != INPUT_SUPERSTEP) {
       postSuperstepCallbacks();
@@ -936,7 +938,7 @@ public class BspServiceWorker<I extends WritableComparable,
         getZkExt(), superstepFinishedNode, false, null, globalStats,
         superstepClasses);
     if (LOG.isInfoEnabled()) {
-      LOG.info("finishSuperstep: Completed superstep " + getSuperstep() +
+      LOG.info("BASIO finishSuperstep: Completed superstep " + superstep_id +
           " with global stats " + globalStats + " and classes " +
           superstepClasses);
     }
@@ -946,7 +948,7 @@ public class BspServiceWorker<I extends WritableComparable,
         ", Superstep=" + getSuperstep());
     incrCachedSuperstep();
     getConfiguration().updateSuperstepClasses(superstepClasses);
-    LOG.info("BASIO finishSuperStep superstep "+getSuperstep());
+//LOG.info("BASIO finishSuperStep superstep "+superstep_id);
     return new FinishedSuperstepStats(
         localVertices,
         globalStats.getHaltComputation(),

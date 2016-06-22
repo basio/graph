@@ -162,7 +162,7 @@ public class SendMessageCache<I extends WritableComparable, M extends Writable>
     boolean forced=true;
     if (forced==true)
 	{
-      LOG.info("Force BASIO sendMessageBatch");
+//      LOG.info("Force BASIO sendMessageBatch");
       PairList<Integer, VertexIdMessages<I, M>>
         workerMessages = removeWorkerMessages(workerInfo);
       WritableRequest writableRequest =
