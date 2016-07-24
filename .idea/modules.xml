@@ -2,11 +2,28 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/giraph-block-app/giraph-block-app.iml" filepath="$PROJECT_DIR$/giraph-block-app/giraph-block-app.iml" />
       <module fileurl="file://$PROJECT_DIR$/giraph-core/giraph-core.iml" filepath="$PROJECT_DIR$/giraph-core/giraph-core.iml" />
-      <module fileurl="file://$PROJECT_DIR$/giraph-dist/giraph-dist.iml" filepath="$PROJECT_DIR$/giraph-dist/giraph-dist.iml" />
-      <module fileurl="file://$PROJECT_DIR$/giraph-examples/giraph-examples.iml" filepath="$PROJECT_DIR$/giraph-examples/giraph-examples.iml" />
-      <module fileurl="file://$PROJECT_DIR$/giraph-parent.iml" filepath="$PROJECT_DIR$/giraph-parent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-core/src/main/main.iml" filepath="$PROJECT_DIR$/giraph-core/src/main/main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-rexster/giraph-kibble/src/main/main1.iml" filepath="$PROJECT_DIR$/giraph-rexster/giraph-kibble/src/main/main1.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-hbase/src/main/main10.iml" filepath="$PROJECT_DIR$/giraph-hbase/src/main/main10.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-rexster/giraph-rexster-io/src/main/main2.iml" filepath="$PROJECT_DIR$/giraph-rexster/giraph-rexster-io/src/main/main2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-examples/src/main/main3.iml" filepath="$PROJECT_DIR$/giraph-examples/src/main/main3.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-gora/src/main/main4.iml" filepath="$PROJECT_DIR$/giraph-gora/src/main/main4.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-hcatalog/src/main/main5.iml" filepath="$PROJECT_DIR$/giraph-hcatalog/src/main/main5.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-accumulo/src/main/main6.iml" filepath="$PROJECT_DIR$/giraph-accumulo/src/main/main6.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-debugger/src/main/main7.iml" filepath="$PROJECT_DIR$/giraph-debugger/src/main/main7.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-block-app/src/main/main8.iml" filepath="$PROJECT_DIR$/giraph-block-app/src/main/main8.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-block-app-8/src/main/main9.iml" filepath="$PROJECT_DIR$/giraph-block-app-8/src/main/main9.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-hcatalog/src/test/test.iml" filepath="$PROJECT_DIR$/giraph-hcatalog/src/test/test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-gora/src/test/test1.iml" filepath="$PROJECT_DIR$/giraph-gora/src/test/test1.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-accumulo/src/test/test2.iml" filepath="$PROJECT_DIR$/giraph-accumulo/src/test/test2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-examples/src/test/test3.iml" filepath="$PROJECT_DIR$/giraph-examples/src/test/test3.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-rexster/giraph-rexster-io/src/test/test4.iml" filepath="$PROJECT_DIR$/giraph-rexster/giraph-rexster-io/src/test/test4.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-debugger/src/test/test5.iml" filepath="$PROJECT_DIR$/giraph-debugger/src/test/test5.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-block-app/src/test/test6.iml" filepath="$PROJECT_DIR$/giraph-block-app/src/test/test6.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-core/src/test/test7.iml" filepath="$PROJECT_DIR$/giraph-core/src/test/test7.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-hbase/src/test/test8.iml" filepath="$PROJECT_DIR$/giraph-hbase/src/test/test8.iml" />
+      <module fileurl="file://$PROJECT_DIR$/giraph-block-app-8/src/test/test9.iml" filepath="$PROJECT_DIR$/giraph-block-app-8/src/test/test9.iml" />
     </modules>
   </component>
 </project>
