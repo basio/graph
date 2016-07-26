@@ -63,7 +63,7 @@ import java.util.concurrent.Callable;
  * @param <I> Vertex index value
  * @param <V> Vertex value
  * @param <E> Edge value
- * @param <M1> Incoming message type
+ * @param <M1> Incoming messfage type
  * @param <M2> Outgoing message type
  */
 public class ComputeCallable<I extends WritableComparable, V extends Writable,
@@ -83,6 +83,7 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
   private final BlockingQueue<Integer> partitionIdQueue;
   /** Message store */
   private final MessageStore<I, M1> messageStore;
+  public  MessageStore<I, M1> incomingMessageStore
   /** Configuration */
   private final ImmutableClassesGiraphConfiguration<I, V, E> configuration;
   /** Worker (for NettyWorkerClientRequestProcessor) */
@@ -238,6 +239,7 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
           context.progress();
           LOG.info("BASIO start vertex "+vertex.getFullId()+ "  compute in superstep "+graphState.getSuperstep());
           computation.compute(vertex, messages);
+
           LOG.info("BASIO end vertex "+vertex.getFullId()+ " compute in superstep "+ graphState.getSuperstep());
 
           // Need to unwrap the mutated edges (possibly)
