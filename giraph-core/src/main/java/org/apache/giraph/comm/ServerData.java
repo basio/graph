@@ -71,6 +71,10 @@ public class ServerData<I extends WritableComparable,
    * previous super step and which will be consumed in current super step)
    */
   private volatile MessageStore<I, Writable> currentMessageStore;
+
+  //this message stores uses the
+  private volatile MessageStore<I, Writable> activeMessageStore;
+
   /**
    * Map of partition ids to incoming vertex mutations from other workers.
    * (Synchronized access to values)
@@ -149,6 +153,10 @@ public class ServerData<I extends WritableComparable,
    */
   public <M extends Writable> MessageStore<I, M> getIncomingMessageStore() {
     return (MessageStore<I, M>) incomingMessageStore;
+  }
+
+  public <M extends Writable> MessageStore<I, M> getActiveMessageStore() {
+    return (MessageStore<I, M>) activeMessageStore;
   }
 
   /**
