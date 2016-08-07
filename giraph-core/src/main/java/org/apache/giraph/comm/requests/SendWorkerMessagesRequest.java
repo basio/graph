@@ -77,7 +77,7 @@ public class SendWorkerMessagesRequest<I extends WritableComparable,
     PairList<Integer, VertexIdMessages<I, M>>.Iterator
         iterator = partitionVertexData.getIterator();
     if(LOG.isTraceEnabled()) {
-      LOG.trace("BASIO doRequest " + serverData.getIncomingMessageStore());
+      LOG.trace("BASIO doRequest " + serverDat a.getIncomingMessageStore());
     }
     while (iterator.hasNext()) {
       iterator.next();

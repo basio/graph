@@ -716,7 +716,7 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
   private void processGraphPartitions(final Mapper<?, ?, ?, ?>.Context context,
       List<PartitionStats> partitionStatsList,
       final GraphState graphState,
-      final MessageStore<I, Writable> messageStore,
+      final MessageStore<I, Writable> messageStore,final MessageStore<I, Writable> activeMessageStore,
       int numPartitions,
       int numThreads) {
     final BlockingQueue<Integer> computePartitionIdQueue =
@@ -748,6 +748,7 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
                 context,
                 graphState,
                 messageStore,
+                    activemessageStore,
                 computePartitionIdQueue,
                 conf,
                 serviceWorker);
