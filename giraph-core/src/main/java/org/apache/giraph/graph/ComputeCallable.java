@@ -232,6 +232,7 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
     // Make sure this is thread-safe across runs
     synchronized (partition) {
       for (Vertex<I, V, E> vertex : partition) {
+          I vertexId = vertex.getId();
         Iterable<M1> messages = messageStore.getVertexMessages(vertex.getId());
         vertex.setPartId(partition.getId());
         if (vertex.isHalted() && !Iterables.isEmpty(messages)) {
@@ -240,8 +241,9 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
         if (!vertex.isHalted()) {
           context.progress();
           LOG.info("BASIO start vertex "+vertex.getFullId()+ "  compute in superstep "+graphState.getSuperstep());
-          computation.compute(vertex, messages);
-
+         // computation.compute(vertex, messages);
+            computeVertex(computation, partition, vertex,
+                    removeAllMessages(vertexId));
           LOG.info("BASIO end vertex "+vertex.getFullId()+ " compute in superstep "+ graphState.getSuperstep());
 
           // Need to unwrap the mutated edges (possibly)
@@ -280,5 +282,83 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
     WorkerProgress.get().incrementPartitionsComputed();
     return partitionStats;
   }
+    private Iterable<M1> removeAllMessages(I vertexId) throws IOException {
+        // Two types of algorithms:
+        // 1. vertices need all messages (aka, stationary; e.g., PageRank)
+        //    -> newer messages always as up-to-date as older messages
+        //    -> edge case is exactly 1 superstep (b/c there, old messages
+        //       are valuable as they only appear once)
+        //
+        // 2. vertices can handle partial messages (e.g., SSSP/WCC)
+        //    -> this subsumes case where old messages are more valuable
+        //       than newer messages, as they won't be repeated
+        //
+        // Type 1 algs should overwrite old msgs with new ones,
+        // while type 2 algs should show them immediately.
+        //
+        // HOWEVER, algorithms typically only do initialization in first
+        // superstep, so we instead persist them to be processed in
+        // a subsequent superstep.
+
+        // YH: messageStore and localMessageStore are set correctly by
+        // GraphTaskManager to be remote-only/BSP and local-only/BSP
+
+        Iterable<M1> messages;
+
+        if (asyncConf.isAsync()) {
+            // YH: (logical) SS0 is special case for async, b/c many algs send
+            // messages but do not have any logic to process them, so messages
+            // revealed in SS0 gets lost. Hence, keep them until after.
+            if (serviceWorker.getLogicalSuperstep() == 0) {
+                messages = EmptyIterable.<M1>get();
+            } else if (asyncConf.needAllMsgs()) {
+                // no need to remove, as we always overwrite
+                messages = Iterables.concat(
+                        ((MessageWithSourceStore) messageStore).
+                                getVertexMessagesWithoutSource(vertexId),
+                        ((MessageWithSourceStore) localMessageStore).
+                                getVertexMessagesWithoutSource(vertexId));
+            } else {
+                // always remove messages immediately (rather than get and clear)
+                messages = Iterables.concat(
+                        messageStore.removeVertexMessages(vertexId),
+                        localMessageStore.removeVertexMessages(vertexId));
+            }
+        } else {
+            // regular BSP---always remove instead of get and clear
+            messages = messageStore.removeVertexMessages(vertexId);
+        }
+
+        return messages;
+    }
+
+    private void computeVertex(
+            Computation<I, V, E, M1, M2> computation,
+            Partition<I, V, E> partition, Vertex<I, V, E> vertex,
+            Iterable<M1> messages) throws IOException, InterruptedException {
+        if (vertex.isHalted() && !Iterables.isEmpty(messages)) {
+            vertex.wakeUp();
+        }
+        if (!vertex.isHalted()) {
+            context.progress();
+
+            // YH: set source id before compute(), and remove the (stale)
+            // reference immediately after compute() is done. This is
+            // thread-safe as there is one Computation per thread.
+            computation.setCurrentSourceId(vertex.getId());
+            computation.compute(vertex, messages);
+            computation.setCurrentSourceId(null);
+
+            // Need to unwrap the mutated edges (possibly)
+            vertex.unwrapMutableEdges();
+            //Compact edges representation if possible
+            if (vertex instanceof Trimmable) {
+                ((Trimmable) vertex).trim();
+            }
+            // Write vertex to superstep output (no-op if it is not used)
+            vertexWriter.writeVertex(vertex);
+            // Need to save the vertex changes (possibly)
+            partition.saveVertex(vertex);
+        }
 }
 
