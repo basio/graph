@@ -151,6 +151,12 @@ public final class AsyncMessageStoreWrapper<I extends WritableComparable,
       throw new RuntimeException(e);
     }
   }
+ @Override
+  public void addPartitionMessage(
+      int partitionId, I destVertexId, M message) throws IOException {
+throw new IOException("Not implemented yet");
+  }
+
 
   @Override
   public void finalizeStore() {
@@ -193,6 +199,21 @@ public final class AsyncMessageStoreWrapper<I extends WritableComparable,
       throw new RuntimeException(e);
     }
   }
+@Override
+  public Iterable<M> removeVertexMessages(
+      I vertexId) throws IOException {
+    throw new IOException ("Not implemented");
+  }
+@Override
+ public boolean hasMessagesForPartition(int partitionId)
+{
+    return true;
+  }
+
+
+@Override public boolean hasMessages(){
+return true;
+}
 
   /**
    * This runnable has logic for background thread

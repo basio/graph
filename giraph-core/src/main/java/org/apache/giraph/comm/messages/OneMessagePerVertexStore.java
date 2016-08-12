@@ -1,4 +1,4 @@
-/*
+	/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,6 +32,7 @@ import org.apache.giraph.utils.VertexIdMessageIterator;
 import org.apache.giraph.utils.VertexIdMessages;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.io.WritableUtils;
 
 /**
  * Implementation of {@link SimpleMessageStore} where we have a single
@@ -52,7 +53,7 @@ public class OneMessagePerVertexStore<I extends WritableComparable,
    * @param messageCombiner MessageCombiner for messages
    * @param config Hadoop configuration
    */
-  public OneMessagePerVertexStore(
+  OneMessagePerVertexStore(
       MessageValueFactory<M> messageValueFactory,
       CentralizedServiceWorker<I, ?, ?> service,
       MessageCombiner<I, M> messageCombiner,
@@ -63,8 +64,24 @@ public class OneMessagePerVertexStore<I extends WritableComparable,
   }
 
   @Override
-  public boolean isPointerListEncoding() {
-    return false;
+  public void addPartitionMessage(
+      int partitionId, I destVertexId, M message) throws IOException {
+    ConcurrentMap<I, M> partitionMap =
+        getOrCreatePartitionMap(partitionId);
+
+    M currentMessage = partitionMap.get(destVertexId);
+    if (currentMessage == null) {
+      M newMessage = messageCombiner.createInitialMessage();
+      // YH: always clone destVertexId
+      currentMessage = partitionMap.putIfAbsent(
+          WritableUtils.clone(destVertexId, config), newMessage);
+      if (currentMessage == null) {
+        currentMessage = newMessage;
+      }
+    }
+    synchronized (currentMessage) {
+      messageCombiner.combine(destVertexId, currentMessage, message);
+    }
   }
 
   @Override
@@ -99,7 +116,9 @@ public class OneMessagePerVertexStore<I extends WritableComparable,
 
   @Override
   protected Iterable<M> getMessagesAsIterable(M message) {
-    return Collections.singleton(message);
+    synchronized (message) {
+      return Collections.singleton(message);
+    }
   }
 
   @Override
@@ -109,11 +128,13 @@ public class OneMessagePerVertexStore<I extends WritableComparable,
 
   @Override
   protected void writeMessages(M messages, DataOutput out) throws IOException {
+    // YH: used by single thread
     messages.write(out);
   }
 
   @Override
   protected M readFieldsForMessages(DataInput in) throws IOException {
+    // YH: used by single thread
     M message = messageValueFactory.newInstance();
     message.readFields(in);
     return message;
@@ -135,6 +156,14 @@ public class OneMessagePerVertexStore<I extends WritableComparable,
       ImmutableClassesGiraphConfiguration<I, ?, ?> config) {
     return new Factory<I, M>(service, config);
   }
+ @Override
+  public void finalizeStore(){
+}
+ @Override
+	    public boolean isPointerListEncoding() {
+	      return false;
+	    }
+
 
   /**
    * Factory for {@link OneMessagePerVertexStore}

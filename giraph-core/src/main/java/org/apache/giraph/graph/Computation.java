@@ -204,4 +204,23 @@ public interface Computation<I extends WritableComparable,
    */
   @SuppressWarnings("unchecked")
   <W extends WorkerContext> W getWorkerContext();
+
+
+
+ /**
+   * YH: Set the source vertex id for all messages that will be sent.
+   * By default, this is the current vertex being processed, or null
+   * if no vertex is currently being processed.
+   *
+   * Shouldn't be called by user code, UNLESS the current vertex being
+   * processed is not the source of messages to be sent. In that case,
+   * use this to set the correct source id before calling sendMessage*().
+   *
+   * @param id Id of vertex that will be sending messages.
+   */
+  void setCurrentSourceId(I id);
+
+
+
+
 }

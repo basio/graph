@@ -40,10 +40,11 @@ import org.apache.giraph.utils.EmptyIterable;
 import org.apache.giraph.utils.VertexIdMessageIterator;
 import org.apache.giraph.utils.VertexIdMessages;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.io.WritableComparable;
 
 import com.google.common.collect.Lists;
-
+ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 /**
  * Special message store to be used when IDs are primitive and message doesn't
  * need to be, and message combiner is used.
@@ -114,8 +115,25 @@ public class IdOneMessagePerVertexStore<I extends WritableComparable,
       service.getPartitionStore().putPartition((Partition) partition);
     }
   }
+@Override
+  public void addPartitionMessage(
+      int partitionId, I destVertexId, M message) throws IOException {
+    Basic2ObjectMap<I, M> partitionMap = map.get(partitionId);
 
-  /**
+    M currentMessage = partitionMap.get(destVertexId);
+    if (currentMessage == null) {
+      M newMessage = messageCombiner.createInitialMessage();
+      // YH: always clone destVertexId
+      currentMessage = partitionMap.put(
+          WritableUtils.clone(destVertexId, config), newMessage);
+      if (currentMessage == null) {
+        currentMessage = newMessage;
+      }
+    }
+    synchronized (currentMessage) {
+      messageCombiner.combine(destVertexId, currentMessage, message);
+    }
+  }  /**
    * Get map which holds messages for partition which vertex belongs to.
    *
    * @param vertexId Id of the vertex
@@ -223,4 +241,70 @@ public class IdOneMessagePerVertexStore<I extends WritableComparable,
   public boolean isPointerListEncoding() {
     return false;
   }
+ @Override
+    public Iterable<M>
+    removeVertexMessages(I vertexId) throws IOException {
+        // TODO-YH: removing is okay, will implement later
+        throw new UnsupportedOperationException(
+                "Unsupported, use removeVertexMessagesWithoutSource instead.");
+
+        //Long2ObjectOpenHashMap<Long2DoubleOpenHashMap> partitionMap =
+        //  getPartitionMap(vertexId);
+        //
+        //if (partitionMap == null) {
+        //  return EmptyIterable.get();
+        //}
+        //
+        //// YH: must synchronize, as writes are concurrent w/ reads in async
+        //synchronized (partitionMap) {
+        //  if (!partitionMap.containsKey(vertexId.get())) {
+        //    return EmptyIterable.get();
+        //  } else {
+        //    return new SomeIterator(partitionMap.remove(vertexId.get()));
+        //  }
+        //}
+    }
+
+ @Override
+    public boolean hasMessagesForPartition(int partitionId) {
+       Basic2ObjectMap<I, M> partitionMap = map.get(partitionId);
+
+        if (partitionMap == null) {
+            return false;
+        }
+
+        synchronized (partitionMap) {
+            return (partitionMap.size()>0);
+        }
+    }
+
+    @Override
+    public boolean hasMessages() {
+        for (Basic2ObjectMap<I, M> partitionMap : map.values()) {
+            synchronized (partitionMap) {
+                if (partitionMap.size()>0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+/*
+@Override
+  public boolean hasMessages() {
+    for (ConcurrentMap<I, ?> partitionMap : map.values()) {
+      if (!partitionMap.isEmpty()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+
+  @Override
+  public boolean hasMessagesForPartition(int partitionId) {
+    ConcurrentMap<I, ?> partitionMap = map.get(partitionId);
+    return partitionMap != null && !partitionMap.isEmpty();
+  }
+*/
 }

@@ -155,7 +155,7 @@ public class ServerData<I extends WritableComparable,
     return (MessageStore<I, M>) incomingMessageStore;
   }
 
-  public <M extends Writable> MessageStore<I, M> getActivMessageStore() {
+  public <M extends Writable> MessageStore<I, M> getActiveMessageStore() {
     return (MessageStore<I, M>) activeMessageStore;
   }
 

@@ -20,7 +20,7 @@ package org.apache.giraph.comm.messages.primitives.long_id;
 
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import org.apache.giraph.bsp.CentralizedServiceWorker;
-import org.apache.giraph.comm.messages.MessageStore;
+import org.apache.giraph.comm.messages.MessageStore;	
 import org.apache.giraph.comm.messages.PointerListMessagesIterable;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.factories.MessageValueFactory;
@@ -106,14 +106,7 @@ public class LongPointerListMessageStore<M extends Writable>
   @Override
   public Iterable<M> getVertexMessages(
     LongWritable vertexId) throws IOException {
-    LongArrayList list = getPartitionMap(vertexId).get(
-        vertexId.get());
-    if (list == null) {
-      return EmptyIterable.get();
-    } else {
-      return new PointerListMessagesIterable<>(messageValueFactory,
-        list, bytesBuffer);
-    }
+    throw new IOException("not implemented");
   }
 
   // FIXME -- complete these for check-pointing
@@ -126,4 +119,31 @@ public class LongPointerListMessageStore<M extends Writable>
   public void readFieldsForPartition(DataInput in, int partitionId)
     throws IOException {
   }
+
+@Override
+    public void addPartitionMessage(
+            int partitionId, LongWritable destVertexId, M message)
+            throws IOException {
+throw new IOException ("not implemented");
+}
+
+
+@Override
+  public Iterable<M> removeVertexMessages(
+      LongWritable  vertexId) throws IOException {
+   throw new IOException ("not implemented");
+
+  }
+
+
+ @Override
+    public boolean hasMessages() {
+               return true;
+    }
+  @Override
+    public boolean hasMessagesForPartition(int partitionId) {
+      
+return true;
+    }
+
 }

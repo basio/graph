@@ -291,5 +291,45 @@ public class DiskBackedMessageStore<I extends WritableComparable,
         maxMessagesInMemory,
         fileStoreFactory);
   }
+
+ @Override
+  public void addPartitionMessage(
+      int partitionId, I destVertexId, M message) throws IOException {
+    PartitionDiskBackedMessageStore<I, M> partitionMessageStore =
+        getMessageStore(partitionId);
+    // TODO-YH: always clone destVertexId
+    partitionMessageStore.addVertexMessages(destVertexId,
+                                            Collections.singleton(message));
+    checkMemory();
+  }
+
+  @Override
+  public boolean hasMessagesForPartition(int partitionId) {
+    PartitionDiskBackedMessageStore<I, M> msgStore =
+      partitionMessageStores.get(partitionId);
+    return msgStore != null && msgStore.hasMessages();
+  }
+
+  @Override
+  public boolean hasMessages() {
+    for (PartitionDiskBackedMessageStore<I, M> msgStore :
+           partitionMessageStores.values()) {
+      if (msgStore.hasMessages()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @Override
+  public Iterable<M> removeVertexMessages(I vertexId) throws IOException {
+    if (hasMessagesForVertex(vertexId)) {
+      return getMessageStore(vertexId).removeVertexMessages(vertexId);
+    } else {
+      return EmptyIterable.get();
+    }
+  }
+
+
 }
 

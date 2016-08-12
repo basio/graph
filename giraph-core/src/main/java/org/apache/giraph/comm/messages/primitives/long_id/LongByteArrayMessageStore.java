@@ -138,6 +138,28 @@ public class LongByteArrayMessageStore<M extends Writable>
     }
   }
 
+@Override
+  public Iterable<M> removeVertexMessages(
+      LongWritable  vertexId) throws IOException {
+    Long2ObjectOpenHashMap<DataInputOutput> partitionMap =
+        getPartitionMap(vertexId);
+
+    if (partitionMap == null) {
+      return EmptyIterable.get();
+    }
+
+    // YH: must synchronize, as writes are concurrent w/ reads in async
+    synchronized (partitionMap) {
+      DataInputOutput dataInputOutput = partitionMap.remove(vertexId.get());
+      if (dataInputOutput == null) {
+        return EmptyIterable.get();
+      } else {
+        return new MessagesIterable<M>(dataInputOutput, messageValueFactory);
+      }
+    }
+  }
+
+
   @Override
   public void writePartition(DataOutput out, int partitionId)
     throws IOException {
@@ -169,4 +191,37 @@ public class LongByteArrayMessageStore<M extends Writable>
       map.put(partitionId, partitionMap);
     }
   }
+
+@Override
+    public void addPartitionMessage(
+            int partitionId, LongWritable  destVertexId,  M message)
+            throws IOException {
+throw new IOException ();
 }
+
+ @Override
+    public boolean hasMessages() {
+        for (Long2ObjectOpenHashMap<?> partitionMap : map.values()) {
+            synchronized (partitionMap) {
+                if (!partitionMap.isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+  @Override
+    public boolean hasMessagesForPartition(int partitionId) {
+        Long2ObjectOpenHashMap<?> partitionMap = map.get(partitionId);
+
+        if (partitionMap == null) {
+            return false;
+        }
+
+        synchronized (partitionMap) {
+            return !partitionMap.isEmpty();
+        }
+    }
+
+
+  }
