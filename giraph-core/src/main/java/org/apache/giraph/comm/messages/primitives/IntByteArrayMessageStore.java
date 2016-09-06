@@ -94,11 +94,6 @@ public class IntByteArrayMessageStore<M extends Writable>
     }
   }
 
-  @Override
-  public boolean isPointerListEncoding() {
-    return false;
-  }
-
   /**
    * Get map which holds messages for partition which vertex belongs to.
    *
@@ -120,12 +115,27 @@ public class IntByteArrayMessageStore<M extends Writable>
   private DataInputOutput getDataInputOutput(
       Int2ObjectOpenHashMap<DataInputOutput> partitionMap,
       int vertexId) {
+    // YH: called only in synchronized blocks, so safe
     DataInputOutput dataInputOutput = partitionMap.get(vertexId);
     if (dataInputOutput == null) {
       dataInputOutput = config.createMessagesInputOutput();
       partitionMap.put(vertexId, dataInputOutput);
     }
     return dataInputOutput;
+  }
+
+  @Override
+  public void addPartitionMessage(int partitionId,
+      IntWritable destVertexId, M message) throws
+      IOException {
+    Int2ObjectOpenHashMap<DataInputOutput> partitionMap =
+        map.get(partitionId);
+
+    synchronized (partitionMap) {
+      DataInputOutput dataInputOutput =
+        getDataInputOutput(partitionMap, destVertexId.get());
+      message.write(dataInputOutput.getDataOutput());
+    }
   }
 
   @Override
@@ -166,34 +176,112 @@ public class IntByteArrayMessageStore<M extends Writable>
   }
 
   @Override
-  public void finalizeStore() {
-  }
-
-  @Override
   public void clearPartition(int partitionId) throws IOException {
-    map.get(partitionId).clear();
+    // YH: not used in async, but synchronize anyway
+    Int2ObjectOpenHashMap<?> partitionMap = map.get(partitionId);
+
+    if (partitionMap == null) {
+      return;
+    }
+
+    synchronized (partitionMap) {
+      partitionMap.clear();
+    }
   }
 
   @Override
   public boolean hasMessagesForVertex(IntWritable vertexId) {
-    return getPartitionMap(vertexId).containsKey(vertexId.get());
+    Int2ObjectOpenHashMap<?> partitionMap = getPartitionMap(vertexId);
+
+    if (partitionMap == null) {
+      return false;
+    }
+
+    synchronized (partitionMap) {
+      return partitionMap.containsKey(vertexId.get());
+    }
+  }
+
+  @Override
+  public boolean hasMessagesForPartition(int partitionId) {
+    Int2ObjectOpenHashMap<?> partitionMap = map.get(partitionId);
+
+    if (partitionMap == null) {
+      return false;
+    }
+
+    synchronized (partitionMap) {
+      return !partitionMap.isEmpty();
+    }
+  }
+
+  @Override
+  public boolean hasMessages() {
+    for (Int2ObjectOpenHashMap<?> partitionMap : map.values()) {
+      synchronized (partitionMap) {
+        if (!partitionMap.isEmpty()) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   @Override
   public Iterable<M> getVertexMessages(
       IntWritable vertexId) throws IOException {
-    DataInputOutput dataInputOutput =
-        getPartitionMap(vertexId).get(vertexId.get());
-    if (dataInputOutput == null) {
+    Int2ObjectOpenHashMap<DataInputOutput> partitionMap =
+        getPartitionMap(vertexId);
+
+    if (partitionMap == null) {
       return EmptyIterable.get();
-    } else {
-      return new MessagesIterable<M>(dataInputOutput, messageValueFactory);
+    }
+
+    // YH: must synchronize, as writes are concurrent w/ reads in async
+    synchronized (partitionMap) {
+      DataInputOutput dataInputOutput = partitionMap.get(vertexId.get());
+      if (dataInputOutput == null) {
+        return EmptyIterable.get();
+      } else {
+        return new MessagesIterable<M>(dataInputOutput, messageValueFactory);
+      }
+    }
+  }
+
+  @Override
+  public Iterable<M> removeVertexMessages(
+      IntWritable vertexId) throws IOException {
+    Int2ObjectOpenHashMap<DataInputOutput> partitionMap =
+        getPartitionMap(vertexId);
+
+    if (partitionMap == null) {
+      return EmptyIterable.get();
+    }
+
+    // YH: must synchronize, as writes are concurrent w/ reads in async
+    synchronized (partitionMap) {
+      DataInputOutput dataInputOutput = partitionMap.remove(vertexId.get());
+      if (dataInputOutput == null) {
+        return EmptyIterable.get();
+      } else {
+        return new MessagesIterable<M>(dataInputOutput, messageValueFactory);
+      }
     }
   }
 
   @Override
   public void clearVertexMessages(IntWritable vertexId) throws IOException {
-    getPartitionMap(vertexId).remove(vertexId.get());
+    // YH: not used in async, but synchronize anyway
+    Int2ObjectOpenHashMap<DataInputOutput> partitionMap =
+      getPartitionMap(vertexId);
+
+    if (partitionMap == null) {
+      return;
+    }
+
+    synchronized (partitionMap) {
+      partitionMap.remove(vertexId.get());
+    }
   }
 
   @Override
@@ -206,8 +294,14 @@ public class IntByteArrayMessageStore<M extends Writable>
       int partitionId) {
     Int2ObjectOpenHashMap<DataInputOutput> partitionMap =
         map.get(partitionId);
+
+    if (partitionMap == null) {
+      return EmptyIterable.get();
+    }
+
     List<IntWritable> vertices =
         Lists.newArrayListWithCapacity(partitionMap.size());
+    // YH: used by single thread
     IntIterator iterator = partitionMap.keySet().iterator();
     while (iterator.hasNext()) {
       vertices.add(new IntWritable(iterator.nextInt()));
@@ -220,6 +314,7 @@ public class IntByteArrayMessageStore<M extends Writable>
       int partitionId) throws IOException {
     Int2ObjectOpenHashMap<DataInputOutput> partitionMap =
         map.get(partitionId);
+    // YH: used by single thread
     out.writeInt(partitionMap.size());
     ObjectIterator<Int2ObjectMap.Entry<DataInputOutput>> iterator =
         partitionMap.int2ObjectEntrySet().fastIterator();
@@ -236,6 +331,7 @@ public class IntByteArrayMessageStore<M extends Writable>
     int size = in.readInt();
     Int2ObjectOpenHashMap<DataInputOutput> partitionMap =
         new Int2ObjectOpenHashMap<DataInputOutput>(size);
+    // YH: used by single thread
     while (size-- > 0) {
       int vertexId = in.readInt();
       DataInputOutput dataInputOutput = config.createMessagesInputOutput();
@@ -246,4 +342,12 @@ public class IntByteArrayMessageStore<M extends Writable>
       map.put(partitionId, partitionMap);
     }
   }
+ @Override
+	    public void finalizeStore() {
+	
+	    }
+ @Override public
+ boolean isPointerListEncoding() {return false;}
+
+
 }

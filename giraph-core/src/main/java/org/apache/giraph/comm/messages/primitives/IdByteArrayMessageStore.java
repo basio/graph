@@ -24,6 +24,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.io.IOException;
 
 import org.apache.giraph.bsp.CentralizedServiceWorker;
 import org.apache.giraph.comm.messages.MessageStore;
@@ -175,7 +176,12 @@ public class IdByteArrayMessageStore<I extends WritableComparable,
       }
     }
   }
+  @Override
 
+public void addPartitionMessage(
+	      int partitionId, I destVertexId, M message) throws IOException {
+throw new IOException ("not implemented");
+}
   @Override
   public void clearPartition(int partitionId) throws IOException {
     map.get(partitionId).clear();
@@ -239,8 +245,18 @@ public class IdByteArrayMessageStore<I extends WritableComparable,
   public void finalizeStore() {
   }
 
+ public Iterable<M> removeVertexMessages(I vertexId) throws IOException{
+throw new IOException("not implemented");
+}
   @Override
   public boolean isPointerListEncoding() {
     return false;
   }
+public boolean hasMessages(){return true;}
+
+public boolean hasMessagesForPartition(int partitionId) {
+return true;
+}
+
+
 }

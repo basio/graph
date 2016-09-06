@@ -363,4 +363,38 @@ public class PartitionDiskBackedMessageStore<I extends WritableComparable,
       return true;
     }
   }
+  /**
+   * Check if we have any unprocessed messages.
+   *
+   * @return True if we have unprocessed messages
+   */
+  public boolean hasMessages() {
+    return !destinationVertices.isEmpty();
+  }
+
+
+  /**
+   * Get and clear the messages for a vertex.
+   *
+   * @param vertexId Vertex id for which we want to get messages
+   * @return Iterable of messages for a vertex id
+   */
+  public Iterable<M> removeVertexMessages(I vertexId) throws IOException {
+    DataInputOutput dataInputOutput = inMemoryMessages.remove(vertexId);
+    if (dataInputOutput == null) {
+      dataInputOutput = config.createMessagesInputOutput();
+    }
+    Iterable<M> combinedIterable = new MessagesIterable<M>(
+        dataInputOutput, messageValueFactory);
+
+    // Note: this is used by DiskBackedMessageStore
+    // TODO-YH: this doesn't remove messages!!
+    for (SequentialFileMessageStore<I, M> fileStore : fileStores) {
+      combinedIterable = Iterables.concat(combinedIterable,
+          fileStore.getVertexMessages(vertexId));
+    }
+    return combinedIterable;
+  }
+
+
 }

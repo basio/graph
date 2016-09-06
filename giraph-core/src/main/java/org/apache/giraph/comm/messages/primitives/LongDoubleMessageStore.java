@@ -98,6 +98,31 @@ public class LongDoubleMessageStore
     return map.get(service.getPartitionId(vertexId));
   }
 
+ @Override
+  public void addPartitionMessage(int partitionId,
+      LongWritable destVertexId, DoubleWritable message) throws
+      IOException {
+    // TODO-YH: this creates a new object for EVERY message, which
+    // can result in substantial overheads.
+    //
+    // A better solution is to have a resuable DoubleWritable for each
+    // partition id (i.e., per-instance map), which are then automatically
+    // protected when synchronized on partitionMap below.
+    DoubleWritable reusableCurrentMessage = new DoubleWritable();
+
+    Long2DoubleOpenHashMap partitionMap = map.get(partitionId);
+    synchronized (partitionMap) {
+      long vertexId = destVertexId.get();
+      double msg = message.get();
+      if (partitionMap.containsKey(vertexId)) {
+        reusableCurrentMessage.set(partitionMap.get(vertexId));
+        messageCombiner.combine(destVertexId, reusableCurrentMessage, message);
+        msg = reusableCurrentMessage.get();
+      }
+      partitionMap.put(vertexId, msg);
+    }
+  }
+
   @Override
   public void addPartitionMessages(int partitionId,
       VertexIdMessages<LongWritable, DoubleWritable> messages) throws
@@ -204,4 +229,49 @@ public class LongDoubleMessageStore
       map.put(partitionId, partitionMap);
     }
   }
+ @Override
+  public Iterable<DoubleWritable> removeVertexMessages(
+      LongWritable vertexId) throws IOException {
+    Long2DoubleOpenHashMap partitionMap = getPartitionMap(vertexId);
+
+    if (partitionMap == null) {
+      return EmptyIterable.get();
+    }
+
+    // YH: must synchronize, as writes are concurrent w/ reads in async
+    synchronized (partitionMap) {
+      if (!partitionMap.containsKey(vertexId.get())) {
+        return EmptyIterable.get();
+      } else {
+        return Collections.singleton(
+            new DoubleWritable(partitionMap.remove(vertexId.get())));
+      }
+    }
+}
+
+  @Override
+  public boolean hasMessages() {
+    for (Long2DoubleOpenHashMap partitionMap : map.values()) {
+      synchronized (partitionMap) {
+        if (!partitionMap.isEmpty()) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  @Override
+  public boolean hasMessagesForPartition(int partitionId) {
+    Long2DoubleOpenHashMap partitionMap = map.get(partitionId);
+
+    if (partitionMap == null) {
+      return false;
+    }
+
+    synchronized (partitionMap) {
+      return !partitionMap.isEmpty();
+    }
+  }
+
 }

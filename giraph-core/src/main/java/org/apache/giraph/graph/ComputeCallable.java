@@ -20,6 +20,7 @@ package org.apache.giraph.graph;
 import org.apache.giraph.bsp.CentralizedServiceWorker;
 import org.apache.giraph.comm.WorkerClientRequestProcessor;
 import org.apache.giraph.comm.messages.MessageStore;
+import org.apache.giraph.comm.messages.with_source.MessageWithSourceStore;
 import org.apache.giraph.comm.netty.NettyWorkerClientRequestProcessor;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.io.SimpleVertexWriter;
@@ -334,30 +335,14 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
 
     Iterable<M1> messages;
 
-    if (asyncConf.isAsync()) {
-      // YH: (logical) SS0 is special case for async, b/c many algs send
-      // messages but do not have any logic to process them, so messages
-      // revealed in SS0 gets lost. Hence, keep them until after.
-      if (serviceWorker.getLogicalSuperstep() == 0) {
-        messages = EmptyIterable.<M1>get();
-      } else if (asyncConf.needAllMsgs()) {
-        // no need to remove, as we always overwrite
-        messages = Iterables.concat(
-                ((MessageWithSourceStore) messageStore).
-                        getVertexMessagesWithoutSource(vertexId),
-                ((MessageWithSourceStore) localMessageStore).
-                        getVertexMessagesWithoutSource(vertexId));
-      } else {
-        // always remove messages immediately (rather than get and clear)
-        messages = Iterables.concat(
-                messageStore.removeVertexMessages(vertexId),
-                localMessageStore.removeVertexMessages(vertexId));
-      }
-    } else {
-      // regular BSP---always remove instead of get and clear
-      messages = messageStore.removeVertexMessages(vertexId);
-    }
-
+         {
+                // no need to remove, as we always overwrite
+                messages = Iterables.concat(
+                        ((MessageWithSourceStore) messageStore).
+                                getVertexMessagesWithoutSource(vertexId),
+                        ((MessageWithSourceStore) activeMessageStore).
+                                getVertexMessagesWithoutSource(vertexId));
+            }
     return messages;
   }
 
@@ -371,9 +356,6 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
     if (!vertex.isHalted()) {
       context.progress();
 
-      // YH: set source id before compute(), and remove the (stale)
-      // reference immediately after compute() is done. This is
-      // thread-safe as there is one Computation per thread.
       computation.setCurrentSourceId(vertex.getId());
       computation.compute(vertex, messages);
       computation.setCurrentSourceId(null);

@@ -74,6 +74,15 @@ public class PointerListPerVertexStore<I extends WritableComparable,
   protected LongArrayList createList() {
     return new LongArrayList();
   }
+@Override
+	    public void finalizeStore() {
+	
+	    }
+ @Override
+  public void addPartitionMessage(
+      int partitionId, I destVertexId, M message) throws IOException {
+throw new IOException("Not implemented yet");
+  }
 
   @Override
   public void addPartitionMessages(

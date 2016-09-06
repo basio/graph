@@ -128,4 +128,49 @@ public interface MessageStore<I extends WritableComparable,
    */
   void readFieldsForPartition(DataInput in,
       int partitionId) throws IOException;
+
+
+/**
+   * YH: Check if we have any unprocessed messages for a partition.
+   *
+   * @param partitionId Id of partition
+   * @return True if we have unprocessed messages for the partition
+   */
+  boolean hasMessagesForPartition(int partitionId);
+
+  /**
+   * YH: Check if we have any unprocessed messages.
+   *
+   * @return True if we have unprocessed messages
+   */
+  boolean hasMessages();
+
+/**
+   * Gets messages for a vertex and removes it from the underlying store.
+   * The lifetime of every message is only guaranteed until the iterator's
+   * next() method is called. Do not hold references to objects returned
+   * by this iterator.
+   *
+   * Similar to getVertexMessages() followed by clearVertexMessages(),
+   * but this is "atomic" and returns an iterable after clearing.
+   *
+   * @param vertexId Vertex id for which we want to get messages
+   * @return Iterable of messages for a vertex id
+   * @throws java.io.IOException
+   */
+  Iterable<M> removeVertexMessages(I vertexId) throws IOException;
+/**
+   * YH: Adds an unserialized message for partition.
+   * Caller can invalidate destVertexId or message after the call.
+   *
+   * @param partitionId Id of partition
+   * @param destVertexId Target vertex id (must be local to worker)
+   * @param message Unserialized message to add
+   * @throws IOException
+   */
+  void addPartitionMessage(int partitionId, I destVertexId, M message)
+    throws IOException;
+
+ 
+
 }

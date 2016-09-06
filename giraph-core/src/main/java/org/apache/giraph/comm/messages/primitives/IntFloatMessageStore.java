@@ -18,6 +18,21 @@
 
 package org.apache.giraph.comm.messages.primitives;
 
+import org.apache.giraph.bsp.CentralizedServiceWorker;
+import org.apache.giraph.combiner.MessageCombiner;
+import org.apache.giraph.comm.messages.MessageStore;
+import org.apache.giraph.partition.Partition;
+import org.apache.giraph.partition.PartitionStore;
+
+import org.apache.giraph.utils.VertexIdMessageIterator;
+import org.apache.giraph.utils.VertexIdMessages;
+import org.apache.giraph.utils.EmptyIterable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Writable;
+
+import com.google.common.collect.Lists;
+
 import it.unimi.dsi.fastutil.ints.Int2FloatMap;
 import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -30,20 +45,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.giraph.bsp.CentralizedServiceWorker;
-import org.apache.giraph.combiner.MessageCombiner;
-import org.apache.giraph.comm.messages.MessageStore;
-import org.apache.giraph.partition.Partition;
-import org.apache.giraph.partition.PartitionStore;
-import org.apache.giraph.utils.EmptyIterable;
-import org.apache.giraph.utils.VertexIdMessageIterator;
-import org.apache.giraph.utils.VertexIdMessages;
-import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Writable;
-
-import com.google.common.collect.Lists;
-
 /**
  * Special message store to be used when ids are IntWritable and messages
  * are FloatWritable and messageCombiner is used.
@@ -55,8 +56,7 @@ public class IntFloatMessageStore
   /** Map from partition id to map from vertex id to message */
   private final Int2ObjectOpenHashMap<Int2FloatOpenHashMap> map;
   /** Message messageCombiner */
-  private final
-  MessageCombiner<? super IntWritable, FloatWritable> messageCombiner;
+  private final MessageCombiner<IntWritable, FloatWritable> messageCombiner;
   /** Service worker */
   private final CentralizedServiceWorker<IntWritable, ?, ?> service;
 
@@ -68,9 +68,10 @@ public class IntFloatMessageStore
    */
   public IntFloatMessageStore(
       CentralizedServiceWorker<IntWritable, Writable, Writable> service,
-      MessageCombiner<? super IntWritable, FloatWritable> messageCombiner) {
+      MessageCombiner<IntWritable, FloatWritable> messageCombiner) {
     this.service = service;
-    this.messageCombiner = messageCombiner;
+    this.messageCombiner =
+        messageCombiner;
 
     map = new Int2ObjectOpenHashMap<Int2FloatOpenHashMap>();
     for (int partitionId : service.getPartitionStore().getPartitionIds()) {
@@ -85,11 +86,6 @@ public class IntFloatMessageStore
     }
   }
 
-  @Override
-  public boolean isPointerListEncoding() {
-    return false;
-  }
-
   /**
    * Get map which holds messages for partition which vertex belongs to.
    *
@@ -98,6 +94,31 @@ public class IntFloatMessageStore
    */
   private Int2FloatOpenHashMap getPartitionMap(IntWritable vertexId) {
     return map.get(service.getPartitionId(vertexId));
+  }
+
+  @Override
+  public void addPartitionMessage(int partitionId,
+      IntWritable destVertexId, FloatWritable message) throws
+      IOException {
+    // TODO-YH: this creates a new object for EVERY message, which
+    // can result in substantial overheads.
+    //
+    // A better solution is to have a resuable FloatWritable for each
+    // partition id (i.e., per-instance map), which are then automatically
+    // protected when synchronized on partitionMap below.
+    FloatWritable reusableCurrentMessage = new FloatWritable();
+
+    Int2FloatOpenHashMap partitionMap = map.get(partitionId);
+    synchronized (partitionMap) {
+      int vertexId = destVertexId.get();
+      float msg = message.get();
+      if (partitionMap.containsKey(vertexId)) {
+        reusableCurrentMessage.set(partitionMap.get(vertexId));
+        messageCombiner.combine(destVertexId, reusableCurrentMessage, message);
+        msg = reusableCurrentMessage.get();
+      }
+      partitionMap.put(vertexId, msg);
+    }
   }
 
   @Override
@@ -130,34 +151,109 @@ public class IntFloatMessageStore
   }
 
   @Override
-  public void finalizeStore() {
-  }
-
-  @Override
   public void clearPartition(int partitionId) throws IOException {
-    map.get(partitionId).clear();
+    // YH: not used in async, but synchronize anyway
+    Int2FloatOpenHashMap partitionMap = map.get(partitionId);
+
+    if (partitionMap == null) {
+      return;
+    }
+
+    synchronized (partitionMap) {
+      partitionMap.clear();
+    }
   }
 
   @Override
   public boolean hasMessagesForVertex(IntWritable vertexId) {
-    return getPartitionMap(vertexId).containsKey(vertexId.get());
+    Int2FloatOpenHashMap partitionMap = getPartitionMap(vertexId);
+
+    if (partitionMap == null) {
+      return false;
+    }
+
+    synchronized (partitionMap) {
+      return partitionMap.containsKey(vertexId.get());
+    }
+  }
+
+  @Override
+  public boolean hasMessagesForPartition(int partitionId) {
+    Int2FloatOpenHashMap partitionMap = map.get(partitionId);
+
+    if (partitionMap == null) {
+      return false;
+    }
+
+    synchronized (partitionMap) {
+      return !partitionMap.isEmpty();
+    }
+  }
+
+  @Override
+  public boolean hasMessages() {
+    for (Int2FloatOpenHashMap partitionMap : map.values()) {
+      synchronized (partitionMap) {
+        if (!partitionMap.isEmpty()) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   @Override
   public Iterable<FloatWritable> getVertexMessages(
       IntWritable vertexId) throws IOException {
     Int2FloatOpenHashMap partitionMap = getPartitionMap(vertexId);
-    if (!partitionMap.containsKey(vertexId.get())) {
+
+    if (partitionMap == null) {
       return EmptyIterable.get();
-    } else {
-      return Collections.singleton(
-          new FloatWritable(partitionMap.get(vertexId.get())));
+    }
+
+    // YH: must synchronize, as writes are concurrent w/ reads in async
+    synchronized (partitionMap) {
+      if (!partitionMap.containsKey(vertexId.get())) {
+        return EmptyIterable.get();
+      } else {
+        return Collections.singleton(
+            new FloatWritable(partitionMap.get(vertexId.get())));
+      }
+    }
+  }
+
+  @Override
+  public Iterable<FloatWritable> removeVertexMessages(
+      IntWritable vertexId) throws IOException {
+    Int2FloatOpenHashMap partitionMap = getPartitionMap(vertexId);
+
+    if (partitionMap == null) {
+      return EmptyIterable.get();
+    }
+
+    // YH: must synchronize, as writes are concurrent w/ reads in async
+    synchronized (partitionMap) {
+      if (!partitionMap.containsKey(vertexId.get())) {
+        return EmptyIterable.get();
+      } else {
+        return Collections.singleton(
+            new FloatWritable(partitionMap.remove(vertexId.get())));
+      }
     }
   }
 
   @Override
   public void clearVertexMessages(IntWritable vertexId) throws IOException {
-    getPartitionMap(vertexId).remove(vertexId.get());
+    // YH: not used in async, but synchronize anyway
+    Int2FloatOpenHashMap partitionMap = getPartitionMap(vertexId);
+
+    if (partitionMap == null) {
+      return;
+    }
+
+    synchronized (partitionMap) {
+      partitionMap.remove(vertexId.get());
+    }
   }
 
   @Override
@@ -169,6 +265,12 @@ public class IntFloatMessageStore
   public Iterable<IntWritable> getPartitionDestinationVertices(
       int partitionId) {
     Int2FloatOpenHashMap partitionMap = map.get(partitionId);
+
+    if (partitionMap == null) {
+      return EmptyIterable.get();
+    }
+
+    // YH: used by single thread
     List<IntWritable> vertices =
         Lists.newArrayListWithCapacity(partitionMap.size());
     IntIterator iterator = partitionMap.keySet().iterator();
@@ -182,6 +284,7 @@ public class IntFloatMessageStore
   public void writePartition(DataOutput out,
       int partitionId) throws IOException {
     Int2FloatOpenHashMap partitionMap = map.get(partitionId);
+    // YH: used by single thread
     out.writeInt(partitionMap.size());
     ObjectIterator<Int2FloatMap.Entry> iterator =
         partitionMap.int2FloatEntrySet().fastIterator();
@@ -197,6 +300,7 @@ public class IntFloatMessageStore
       int partitionId) throws IOException {
     int size = in.readInt();
     Int2FloatOpenHashMap partitionMap = new Int2FloatOpenHashMap(size);
+    // YH: used by single thread
     while (size-- > 0) {
       int vertexId = in.readInt();
       float message = in.readFloat();
@@ -206,4 +310,12 @@ public class IntFloatMessageStore
       map.put(partitionId, partitionMap);
     }
   }
+ @Override
+  public void finalizeStore(){
+}
+ @Override
+	    public boolean isPointerListEncoding() {
+	      return false;
+	    }
+
 }
