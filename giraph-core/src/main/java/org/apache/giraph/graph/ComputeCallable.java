@@ -69,77 +69,105 @@ import java.util.concurrent.Callable;
 public class ComputeCallable<I extends WritableComparable, V extends Writable,
     E extends Writable, M1 extends Writable, M2 extends Writable>
     implements Callable<Collection<PartitionStats>> {
-  /** Class logger */
-  private static final Logger LOG  = Logger.getLogger(ComputeCallable.class);
-  /** Class time object */
+  /**
+   * Class logger
+   */
+  private static final Logger LOG = Logger.getLogger(ComputeCallable.class);
+  /**
+   * Class time object
+   */
   private static final Time TIME = SystemTime.get();
-  /** How often to update WorkerProgress */
+  /**
+   * How often to update WorkerProgress
+   */
   private static final long VERTICES_TO_UPDATE_PROGRESS = 100000;
-  /** Context */
+  /**
+   * Context
+   */
   private final Mapper<?, ?, ?, ?>.Context context;
-  /** Graph state */
+  /**
+   * Graph state
+   */
   private final GraphState graphState;
-  /** Thread-safe queue of all partition ids */
+  /**
+   * Thread-safe queue of all partition ids
+   */
   private final BlockingQueue<Integer> partitionIdQueue;
-  /** Message store */
+  /**
+   * Message store
+   */
   private final MessageStore<I, M1> messageStore;
-  public  MessageStore<I, M1> activeMessageStore;
-  /** Configuration */
+  public MessageStore<I, M1> activeMessageStore;
+  /**
+   * Configuration
+   */
   private final ImmutableClassesGiraphConfiguration<I, V, E> configuration;
-  /** Worker (for NettyWorkerClientRequestProcessor) */
+  /**
+   * Worker (for NettyWorkerClientRequestProcessor)
+   */
   private final CentralizedServiceWorker<I, V, E> serviceWorker;
-  /** Dump some progress every 30 seconds */
+  /**
+   * Dump some progress every 30 seconds
+   */
   private final TimedLogger timedLogger = new TimedLogger(30 * 1000, LOG);
-  /** VertexWriter for this ComputeCallable */
+  /**
+   * VertexWriter for this ComputeCallable
+   */
   private SimpleVertexWriter<I, V, E> vertexWriter;
-  /** Get the start time in nanos */
+  /**
+   * Get the start time in nanos
+   */
   private final long startNanos = TIME.getNanoseconds();
 
   // Per-Superstep Metrics
-  /** Messages sent */
+  /**
+   * Messages sent
+   */
   private final Counter messagesSentCounter;
-  /** Message bytes sent */
+  /**
+   * Message bytes sent
+   */
   private final Counter messageBytesSentCounter;
 
   /**
    * Constructor
    *
-   * @param context Context
-   * @param graphState Current graph state (use to create own graph state)
-   * @param messageStore Message store
+   * @param context          Context
+   * @param graphState       Current graph state (use to create own graph state)
+   * @param messageStore     Message store
    * @param partitionIdQueue Queue of partition ids (thread-safe)
-   * @param configuration Configuration
-   * @param serviceWorker Service worker
+   * @param configuration    Configuration
+   * @param serviceWorker    Service worker
    */
   public ComputeCallable(
-      Mapper<?, ?, ?, ?>.Context context, GraphState graphState,
-      MessageStore<I, M1> messageStore,
-      MessageStore<I, M1> activeMessageStore,
-      BlockingQueue<Integer> partitionIdQueue,
-      ImmutableClassesGiraphConfiguration<I, V, E> configuration,
-      CentralizedServiceWorker<I, V, E> serviceWorker) {
+          Mapper<?, ?, ?, ?>.Context context, GraphState graphState,
+          MessageStore<I, M1> messageStore,
+          MessageStore<I, M1> activeMessageStore,
+          BlockingQueue<Integer> partitionIdQueue,
+          ImmutableClassesGiraphConfiguration<I, V, E> configuration,
+          CentralizedServiceWorker<I, V, E> serviceWorker) {
     this.context = context;
     this.configuration = configuration;
     this.partitionIdQueue = partitionIdQueue;
     this.messageStore = messageStore;
-    this.activeMessageStore=activeMessageStore;
+    this.activeMessageStore = activeMessageStore;
     this.serviceWorker = serviceWorker;
     this.graphState = graphState;
 
     SuperstepMetricsRegistry metrics = GiraphMetrics.get().perSuperstep();
     messagesSentCounter = metrics.getCounter(MetricNames.MESSAGES_SENT);
     messageBytesSentCounter =
-      metrics.getCounter(MetricNames.MESSAGE_BYTES_SENT);
+            metrics.getCounter(MetricNames.MESSAGE_BYTES_SENT);
   }
 
   @Override
   public Collection<PartitionStats> call() {
     // Thread initialization (for locality)
     WorkerClientRequestProcessor<I, V, E> workerClientRequestProcessor =
-        new NettyWorkerClientRequestProcessor<I, V, E>(
-            context, configuration, serviceWorker);
+            new NettyWorkerClientRequestProcessor<I, V, E>(
+                    context, configuration, serviceWorker);
     WorkerThreadGlobalCommUsage aggregatorUsage =
-        serviceWorker.getAggregatorHandler().newThreadAggregatorUsage();
+            serviceWorker.getAggregatorHandler().newThreadAggregatorUsage();
     WorkerContext workerContext = serviceWorker.getWorkerContext();
 
     vertexWriter = serviceWorker.getSuperstepOutput().getVertexWriter();
@@ -152,35 +180,35 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
       }
 
       Partition<I, V, E> partition =
-          serviceWorker.getPartitionStore().getOrCreatePartition(partitionId);
+              serviceWorker.getPartitionStore().getOrCreatePartition(partitionId);
 
       Computation<I, V, E, M1, M2> computation =
-          (Computation<I, V, E, M1, M2>) configuration.createComputation();
+              (Computation<I, V, E, M1, M2>) configuration.createComputation();
       computation.initialize(graphState, workerClientRequestProcessor,
-          serviceWorker.getGraphTaskManager(), aggregatorUsage, workerContext);
+              serviceWorker.getGraphTaskManager(), aggregatorUsage, workerContext);
       computation.preSuperstep();
 
       try {
         PartitionStats partitionStats =
-            computePartition(computation, partition);
+                computePartition(computation, partition);
         partitionStatsList.add(partitionStats);
         long partitionMsgs = workerClientRequestProcessor.resetMessageCount();
         partitionStats.addMessagesSentCount(partitionMsgs);
         messagesSentCounter.inc(partitionMsgs);
         long partitionMsgBytes =
-          workerClientRequestProcessor.resetMessageBytesCount();
+                workerClientRequestProcessor.resetMessageBytesCount();
         partitionStats.addMessageBytesSentCount(partitionMsgBytes);
         messageBytesSentCounter.inc(partitionMsgBytes);
         timedLogger.info("call: Completed " +
-            partitionStatsList.size() + " partitions, " +
-            partitionIdQueue.size() + " remaining " +
-            MemoryUtils.getRuntimeMemoryStats());
+                partitionStatsList.size() + " partitions, " +
+                partitionIdQueue.size() + " remaining " +
+                MemoryUtils.getRuntimeMemoryStats());
       } catch (IOException e) {
         throw new IllegalStateException("call: Caught unexpected IOException," +
-            " failing.", e);
+                " failing.", e);
       } catch (InterruptedException e) {
         throw new IllegalStateException("call: Caught unexpected " +
-            "InterruptedException, failing.", e);
+                "InterruptedException, failing.", e);
       } finally {
         serviceWorker.getPartitionStore().putPartition(partition);
       }
@@ -193,10 +221,10 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
 
     if (LOG.isInfoEnabled()) {
       float seconds = Times.getNanosSince(TIME, startNanos) /
-          Time.NS_PER_SECOND_AS_FLOAT;
-      LOG.info("call: Computation took " + seconds + " secs for "  +
-          partitionStatsList.size() + " partitions on superstep " +
-          graphState.getSuperstep() + ".  Flushing started");
+              Time.NS_PER_SECOND_AS_FLOAT;
+      LOG.info("call: Computation took " + seconds + " secs for " +
+              partitionStatsList.size() + " partitions on superstep " +
+              graphState.getSuperstep() + ".  Flushing started");
     }
     try {
       workerClientRequestProcessor.flush();
@@ -204,9 +232,9 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
       // from the last partition processed
       if (partitionStatsList.size() > 0) {
         long partitionMsgBytes =
-          workerClientRequestProcessor.resetMessageBytesCount();
+                workerClientRequestProcessor.resetMessageBytesCount();
         partitionStatsList.get(partitionStatsList.size() - 1).
-          addMessageBytesSentCount(partitionMsgBytes);
+                addMessageBytesSentCount(partitionMsgBytes);
         messageBytesSentCounter.inc(partitionMsgBytes);
       }
       aggregatorUsage.finishThreadComputation();
@@ -220,19 +248,19 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
    * Compute a single partition
    *
    * @param computation Computation to use
-   * @param partition Partition to compute
+   * @param partition   Partition to compute
    * @return Partition stats for this computed partition
    */
   private PartitionStats computePartition(
-      Computation<I, V, E, M1, M2> computation,
-      Partition<I, V, E> partition) throws IOException, InterruptedException {
+          Computation<I, V, E, M1, M2> computation,
+          Partition<I, V, E> partition) throws IOException, InterruptedException {
     PartitionStats partitionStats =
-        new PartitionStats(partition.getId(), 0, 0, 0, 0, 0);
+            new PartitionStats(partition.getId(), 0, 0, 0, 0, 0);
     long verticesComputedProgress = 0;
     // Make sure this is thread-safe across runs
     synchronized (partition) {
       for (Vertex<I, V, E> vertex : partition) {
-          I vertexId = vertex.getId();
+        I vertexId = vertex.getId();
         Iterable<M1> messages = messageStore.getVertexMessages(vertex.getId());
         vertex.setPartId(partition.getId());
         if (vertex.isHalted() && !Iterables.isEmpty(messages)) {
@@ -240,11 +268,11 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
         }
         if (!vertex.isHalted()) {
           context.progress();
-          LOG.info("BASIO start vertex "+vertex.getFullId()+ "  compute in superstep "+graphState.getSuperstep());
-         // computation.compute(vertex, messages);
-            computeVertex(computation, partition, vertex,
-                    removeAllMessages(vertexId));
-          LOG.info("BASIO end vertex "+vertex.getFullId()+ " compute in superstep "+ graphState.getSuperstep());
+          LOG.info("BASIO start vertex " + vertex.getFullId() + "  compute in superstep " + graphState.getSuperstep());
+          // computation.compute(vertex, messages);
+          computeVertex(computation, partition, vertex,
+                  removeAllMessages(vertexId));
+          LOG.info("BASIO end vertex " + vertex.getFullId() + " compute in superstep " + graphState.getSuperstep());
 
           // Need to unwrap the mutated edges (possibly)
           vertex.unwrapMutableEdges();
@@ -259,7 +287,7 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
         }
         if (vertex.isHalted()) {
           partitionStats.incrFinishedVertexCount();
-          LOG.info("BASIO halt vertex "+vertex.getFullId()+" comopute  in superstep "+graphState.getSuperstep());
+          LOG.info("BASIO halt vertex " + vertex.getFullId() + " comopute  in superstep " + graphState.getSuperstep());
 
         }
         // Remove the messages now that the vertex has finished computation
@@ -282,83 +310,84 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
     WorkerProgress.get().incrementPartitionsComputed();
     return partitionStats;
   }
-    private Iterable<M1> removeAllMessages(I vertexId) throws IOException {
-        // Two types of algorithms:
-        // 1. vertices need all messages (aka, stationary; e.g., PageRank)
-        //    -> newer messages always as up-to-date as older messages
-        //    -> edge case is exactly 1 superstep (b/c there, old messages
-        //       are valuable as they only appear once)
-        //
-        // 2. vertices can handle partial messages (e.g., SSSP/WCC)
-        //    -> this subsumes case where old messages are more valuable
-        //       than newer messages, as they won't be repeated
-        //
-        // Type 1 algs should overwrite old msgs with new ones,
-        // while type 2 algs should show them immediately.
-        //
-        // HOWEVER, algorithms typically only do initialization in first
-        // superstep, so we instead persist them to be processed in
-        // a subsequent superstep.
 
-        // YH: messageStore and localMessageStore are set correctly by
-        // GraphTaskManager to be remote-only/BSP and local-only/BSP
+  private Iterable<M1> removeAllMessages(I vertexId) throws IOException {
+    // Two types of algorithms:
+    // 1. vertices need all messages (aka, stationary; e.g., PageRank)
+    //    -> newer messages always as up-to-date as older messages
+    //    -> edge case is exactly 1 superstep (b/c there, old messages
+    //       are valuable as they only appear once)
+    //
+    // 2. vertices can handle partial messages (e.g., SSSP/WCC)
+    //    -> this subsumes case where old messages are more valuable
+    //       than newer messages, as they won't be repeated
+    //
+    // Type 1 algs should overwrite old msgs with new ones,
+    // while type 2 algs should show them immediately.
+    //
+    // HOWEVER, algorithms typically only do initialization in first
+    // superstep, so we instead persist them to be processed in
+    // a subsequent superstep.
 
-        Iterable<M1> messages;
+    // YH: messageStore and localMessageStore are set correctly by
+    // GraphTaskManager to be remote-only/BSP and local-only/BSP
 
-        if (asyncConf.isAsync()) {
-            // YH: (logical) SS0 is special case for async, b/c many algs send
-            // messages but do not have any logic to process them, so messages
-            // revealed in SS0 gets lost. Hence, keep them until after.
-            if (serviceWorker.getLogicalSuperstep() == 0) {
-                messages = EmptyIterable.<M1>get();
-            } else if (asyncConf.needAllMsgs()) {
-                // no need to remove, as we always overwrite
-                messages = Iterables.concat(
-                        ((MessageWithSourceStore) messageStore).
-                                getVertexMessagesWithoutSource(vertexId),
-                        ((MessageWithSourceStore) localMessageStore).
-                                getVertexMessagesWithoutSource(vertexId));
-            } else {
-                // always remove messages immediately (rather than get and clear)
-                messages = Iterables.concat(
-                        messageStore.removeVertexMessages(vertexId),
-                        localMessageStore.removeVertexMessages(vertexId));
-            }
-        } else {
-            // regular BSP---always remove instead of get and clear
-            messages = messageStore.removeVertexMessages(vertexId);
-        }
+    Iterable<M1> messages;
 
-        return messages;
+    if (asyncConf.isAsync()) {
+      // YH: (logical) SS0 is special case for async, b/c many algs send
+      // messages but do not have any logic to process them, so messages
+      // revealed in SS0 gets lost. Hence, keep them until after.
+      if (serviceWorker.getLogicalSuperstep() == 0) {
+        messages = EmptyIterable.<M1>get();
+      } else if (asyncConf.needAllMsgs()) {
+        // no need to remove, as we always overwrite
+        messages = Iterables.concat(
+                ((MessageWithSourceStore) messageStore).
+                        getVertexMessagesWithoutSource(vertexId),
+                ((MessageWithSourceStore) localMessageStore).
+                        getVertexMessagesWithoutSource(vertexId));
+      } else {
+        // always remove messages immediately (rather than get and clear)
+        messages = Iterables.concat(
+                messageStore.removeVertexMessages(vertexId),
+                localMessageStore.removeVertexMessages(vertexId));
+      }
+    } else {
+      // regular BSP---always remove instead of get and clear
+      messages = messageStore.removeVertexMessages(vertexId);
     }
 
-    private void computeVertex(
-            Computation<I, V, E, M1, M2> computation,
-            Partition<I, V, E> partition, Vertex<I, V, E> vertex,
-            Iterable<M1> messages) throws IOException, InterruptedException {
-        if (vertex.isHalted() && !Iterables.isEmpty(messages)) {
-            vertex.wakeUp();
-        }
-        if (!vertex.isHalted()) {
-            context.progress();
+    return messages;
+  }
 
-            // YH: set source id before compute(), and remove the (stale)
-            // reference immediately after compute() is done. This is
-            // thread-safe as there is one Computation per thread.
-            computation.setCurrentSourceId(vertex.getId());
-            computation.compute(vertex, messages);
-            computation.setCurrentSourceId(null);
+  private void computeVertex(
+          Computation<I, V, E, M1, M2> computation,
+          Partition<I, V, E> partition, Vertex<I, V, E> vertex,
+          Iterable<M1> messages) throws IOException, InterruptedException {
+    if (vertex.isHalted() && !Iterables.isEmpty(messages)) {
+      vertex.wakeUp();
+    }
+    if (!vertex.isHalted()) {
+      context.progress();
 
-            // Need to unwrap the mutated edges (possibly)
-            vertex.unwrapMutableEdges();
-            //Compact edges representation if possible
-            if (vertex instanceof Trimmable) {
-                ((Trimmable) vertex).trim();
-            }
-            // Write vertex to superstep output (no-op if it is not used)
-            vertexWriter.writeVertex(vertex);
-            // Need to save the vertex changes (possibly)
-            partition.saveVertex(vertex);
-        }
+      // YH: set source id before compute(), and remove the (stale)
+      // reference immediately after compute() is done. This is
+      // thread-safe as there is one Computation per thread.
+      computation.setCurrentSourceId(vertex.getId());
+      computation.compute(vertex, messages);
+      computation.setCurrentSourceId(null);
+
+      // Need to unwrap the mutated edges (possibly)
+      vertex.unwrapMutableEdges();
+      //Compact edges representation if possible
+      if (vertex instanceof Trimmable) {
+        ((Trimmable) vertex).trim();
+      }
+      // Write vertex to superstep output (no-op if it is not used)
+      vertexWriter.writeVertex(vertex);
+      // Need to save the vertex changes (possibly)
+      partition.saveVertex(vertex);
+    }
+  }
 }
-
