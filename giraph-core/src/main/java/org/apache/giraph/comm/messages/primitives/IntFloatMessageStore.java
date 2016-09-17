@@ -56,7 +56,7 @@ public class IntFloatMessageStore
   /** Map from partition id to map from vertex id to message */
   private final Int2ObjectOpenHashMap<Int2FloatOpenHashMap> map;
   /** Message messageCombiner */
-  private final MessageCombiner<IntWritable, FloatWritable> messageCombiner;
+  private final MessageCombiner<? super IntWritable, FloatWritable> messageCombiner;
   /** Service worker */
   private final CentralizedServiceWorker<IntWritable, ?, ?> service;
 
@@ -68,7 +68,7 @@ public class IntFloatMessageStore
    */
   public IntFloatMessageStore(
       CentralizedServiceWorker<IntWritable, Writable, Writable> service,
-      MessageCombiner<IntWritable, FloatWritable> messageCombiner) {
+      MessageCombiner<? super IntWritable, FloatWritable> messageCombiner) {
     this.service = service;
     this.messageCombiner =
         messageCombiner;

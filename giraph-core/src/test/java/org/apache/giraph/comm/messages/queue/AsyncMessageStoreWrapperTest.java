@@ -69,6 +69,12 @@ public class AsyncMessageStoreWrapperTest {
       assertNotNull(messages);
       counters[partition]++;
     }
+@Override
+  public void addPartitionMessage(int partitionId,
+      LongWritable destVertexId, IntWritable message) throws
+      IOException {
+  
+  }
 
     @Override
     public boolean isPointerListEncoding() {
@@ -119,5 +125,16 @@ public class AsyncMessageStoreWrapperTest {
     public void readFieldsForPartition(DataInput in, int partitionId) throws IOException {
 
     }
-  }
+public Iterable<IntWritable> removeVertexMessages(
+	      LongWritable  vertexId) throws IOException {return null;}
+  
+
+ 
+	  public boolean hasMessages() {return true;}
+  @Override
+	    public boolean hasMessagesForPartition(int partitionId) {
+	      
+	return true;
+	}
+}
 }
