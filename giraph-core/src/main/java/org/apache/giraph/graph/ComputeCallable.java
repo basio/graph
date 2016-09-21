@@ -306,7 +306,7 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
       }
 
       messageStore.clearPartition(partition.getId());
-    }
+    };
     WorkerProgress.get().addVerticesComputed(verticesComputedProgress);
     WorkerProgress.get().incrementPartitionsComputed();
     return partitionStats;
