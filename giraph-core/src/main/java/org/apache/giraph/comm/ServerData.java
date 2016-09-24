@@ -71,6 +71,8 @@ public class ServerData<I extends WritableComparable,
    * previous super step and which will be consumed in current super step)
    */
   private volatile MessageStore<I, Writable> currentMessageStore;
+
+  private volatile MessageStore<I, Writable> remoteMessageStore;
   /**
    * Map of partition ids to incoming vertex mutations from other workers.
    * (Synchronized access to values)
@@ -141,6 +143,7 @@ public class ServerData<I extends WritableComparable,
   }
 
   /**
+  /**
    * Get message store for incoming messages (messages which will be consumed
    * in the next super step)
    *
@@ -150,7 +153,9 @@ public class ServerData<I extends WritableComparable,
   public <M extends Writable> MessageStore<I, M> getIncomingMessageStore() {
     return (MessageStore<I, M>) incomingMessageStore;
   }
-
+    public <M extends Writable> MessageStore<I, M> getRemoteMessageStore() {
+        return (MessageStore<I, M>) remoteMessageStore;
+    }
   /**
    * Get message store for current messages (messages which we received in
    * previous super step and which will be consumed in current super step)
@@ -176,6 +181,10 @@ public class ServerData<I extends WritableComparable,
       incomingMessageStore.clearAll();
       incomingMessageStore = null;
     }
+    if (remoteMessageStore != null) {
+      remoteMessageStore.clearAll();
+      remoteMessageStore = null;
+    }
     prepareSuperstep();
   }
 
@@ -200,6 +209,10 @@ public class ServerData<I extends WritableComparable,
     currentWorkerToWorkerMessages = incomingWorkerToWorkerMessages;
     incomingWorkerToWorkerMessages =
         Collections.synchronizedList(new ArrayList<Writable>());
+//may be need to
+      remoteMessageStore =
+              remoteMessageStore != null ? remoteMessageStore :
+                      messageStoreFactory.newStore(conf.getIncomingMessageValueFactory());
   }
 
   /**
@@ -209,6 +222,7 @@ public class ServerData<I extends WritableComparable,
   public void waitForComplete() {
     if (incomingMessageStore instanceof AsyncMessageStoreWrapper) {
       ((AsyncMessageStoreWrapper) incomingMessageStore).waitToComplete();
+
     }
   }
 

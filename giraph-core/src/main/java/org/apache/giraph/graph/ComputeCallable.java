@@ -83,7 +83,10 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
   private final BlockingQueue<Integer> partitionIdQueue;
   /** Message store */
   private final MessageStore<I, M1> messageStore;
-  /** Configuration */
+    /** remote Message store */
+    private final MessageStore<I, M1> remoteMessageStore;
+
+    /** Configuration */
   private final ImmutableClassesGiraphConfiguration<I, V, E> configuration;
   /** Worker (for NettyWorkerClientRequestProcessor) */
   private final CentralizedServiceWorker<I, V, E> serviceWorker;
@@ -113,6 +116,7 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
   public ComputeCallable(
       Mapper<?, ?, ?, ?>.Context context, GraphState graphState,
       MessageStore<I, M1> messageStore,
+      MessageStore<I, M1> remoteMessageStore,
       BlockingQueue<Integer> partitionIdQueue,
       ImmutableClassesGiraphConfiguration<I, V, E> configuration,
       CentralizedServiceWorker<I, V, E> serviceWorker) {
@@ -120,6 +124,7 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
     this.configuration = configuration;
     this.partitionIdQueue = partitionIdQueue;
     this.messageStore = messageStore;
+    this.remoteMessageStore = remoteMessageStore;
     this.serviceWorker = serviceWorker;
     this.graphState = graphState;
 

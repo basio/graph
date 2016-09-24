@@ -322,6 +322,9 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
       context.progress();
       MessageStore<I, Writable> messageStore =
         serviceWorker.getServerData().getCurrentMessageStore();
+      MessageStore<I, Writable> remoteMessageStore =
+              serviceWorker.getServerData().getRemoteMessageStore();
+
       int numPartitions = serviceWorker.getPartitionStore().getNumPartitions();
       int numThreads = Math.min(numComputeThreads, numPartitions);
       if (LOG.isInfoEnabled()) {
@@ -333,7 +336,7 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
       // execute the current superstep
       if (numPartitions > 0) {
         processGraphPartitions(context, partitionStatsList, graphState,
-          messageStore, numPartitions, numThreads);
+          messageStore, remoteMessageStore, numPartitions, numThreads);
       }
       finishedSuperstepStats = completeSuperstepAndCollectStats(
         partitionStatsList, superstepTimerContext);
@@ -717,6 +720,7 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
       List<PartitionStats> partitionStatsList,
       final GraphState graphState,
       final MessageStore<I, Writable> messageStore,
+      final MessageStore<I, Writable> remoteMessageStore,
       int numPartitions,
       int numThreads) {
     final BlockingQueue<Integer> computePartitionIdQueue =
@@ -748,6 +752,7 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
                 context,
                 graphState,
                 messageStore,
+                    remoteMessageStore,
                 computePartitionIdQueue,
                 conf,
                 serviceWorker);
