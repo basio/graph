@@ -31,6 +31,7 @@ import org.apache.giraph.partition.PartitionStats;
 import org.apache.giraph.time.SystemTime;
 import org.apache.giraph.time.Time;
 import org.apache.giraph.time.Times;
+import org.apache.giraph.utils.EmptyIterable;
 import org.apache.giraph.utils.MemoryUtils;
 import org.apache.giraph.utils.TimedLogger;
 import org.apache.giraph.utils.Trimmable;
@@ -275,9 +276,7 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
     private boolean hasMessages(I vertexId) {
         if (serviceWorker.getSuperstep() == 0) {
             return false;
-        } else if (asyncConf.needAllMsgs()) {
-            return true;
-        } else {
+       } else {
             return messageStore.hasMessagesForVertex(vertexId) ||
                     localMessageStore.hasMessagesForVertex(vertexId);
         }
@@ -297,9 +296,9 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
             // no need to remove, as we always overwrite
             messages = Iterables.concat(
                     ( messageStore).
-                            getVertexMessagesWithoutSource(vertexId),
+                            getVertexMessages(vertexId),
                     ( localMessageStore).
-                            getVertexMessagesWithoutSource(vertexId));
+                            getVertexMessages(vertexId));
         } else {
             // always remove messages immediately (rather than get and clear)
             messages = Iterables.concat(
@@ -346,5 +345,5 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
       // Need to save the vertex changes (possibly)
       partition.saveVertex(vertex);
     }
-}
+}}
 

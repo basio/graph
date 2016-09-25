@@ -322,8 +322,7 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
       context.progress();
 
         MessageStore<I, Writable> messageStore =
-
-                        serviceWorker.getServerData().getRemoteMessageStore() :
+                        serviceWorker.getServerData().getRemoteMessageStore(); //ASYNC 
 
         // YH: pass in local message store if needed (null if not)
         MessageStore<I, Writable> localMessageStore =
