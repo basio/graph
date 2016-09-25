@@ -73,6 +73,7 @@ public class ServerData<I extends WritableComparable,
   private volatile MessageStore<I, Writable> currentMessageStore;
 
   private volatile MessageStore<I, Writable> remoteMessageStore;
+    private volatile MessageStore<I, Writable> localMessageStore;
   /**
    * Map of partition ids to incoming vertex mutations from other workers.
    * (Synchronized access to values)
@@ -156,6 +157,9 @@ public class ServerData<I extends WritableComparable,
     public <M extends Writable> MessageStore<I, M> getRemoteMessageStore() {
         return (MessageStore<I, M>) remoteMessageStore;
     }
+  public <M extends Writable> MessageStore<I, M> getLocalMessageStore() {
+    return (MessageStore<I, M>) localMessageStore;
+  }
   /**
    * Get message store for current messages (messages which we received in
    * previous super step and which will be consumed in current super step)
@@ -209,10 +213,16 @@ public class ServerData<I extends WritableComparable,
     currentWorkerToWorkerMessages = incomingWorkerToWorkerMessages;
     incomingWorkerToWorkerMessages =
         Collections.synchronizedList(new ArrayList<Writable>());
-//may be need to
-      remoteMessageStore =
-              remoteMessageStore != null ? remoteMessageStore :
+
+     if (remoteMessageStore == null) {
+              remoteMessageStore =
                       messageStoreFactory.newStore(conf.getIncomingMessageValueFactory());
+          }
+          if (localMessageStore == null) {
+              localMessageStore =
+                      messageStoreFactory.newStore(conf.getIncomingMessageValueFactory());
+          }
+
   }
 
   /**

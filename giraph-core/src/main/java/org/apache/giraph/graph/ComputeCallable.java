@@ -84,7 +84,7 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
   /** Message store */
   private final MessageStore<I, M1> messageStore;
     /** remote Message store */
-    private final MessageStore<I, M1> remoteMessageStore;
+    private final MessageStore<I, M1> localMessageStore;
 
     /** Configuration */
   private final ImmutableClassesGiraphConfiguration<I, V, E> configuration;
@@ -116,7 +116,7 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
   public ComputeCallable(
       Mapper<?, ?, ?, ?>.Context context, GraphState graphState,
       MessageStore<I, M1> messageStore,
-      MessageStore<I, M1> remoteMessageStore,
+      MessageStore<I, M1> localMessageStore,
       BlockingQueue<Integer> partitionIdQueue,
       ImmutableClassesGiraphConfiguration<I, V, E> configuration,
       CentralizedServiceWorker<I, V, E> serviceWorker) {
@@ -124,7 +124,7 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
     this.configuration = configuration;
     this.partitionIdQueue = partitionIdQueue;
     this.messageStore = messageStore;
-    this.remoteMessageStore = remoteMessageStore;
+    this.localMessageStore = localMessageStore;
     this.serviceWorker = serviceWorker;
     this.graphState = graphState;
 
@@ -217,69 +217,134 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
     }
     return partitionStatsList;
   }
+    private PartitionStats computePartition(
+            Computation<I, V, E, M1, M2> computation,
+            Partition<I, V, E> partition,
+            WorkerClientRequestProcessor<I, V, E> workerClientRequestProcessor)
+            throws IOException, InterruptedException {
+        PartitionStats partitionStats =
+                new PartitionStats(partition.getId(), 0, 0, 0, 0, 0);
+        long verticesComputedProgress = 0;
+
+        // Make sure this is thread-safe across runs
+        synchronized (partition) {
+            for (Vertex<I, V, E> vertex : partition) {
+                I vertexId = vertex.getId();
+
+                // if (serviceWorker.getSuperstep() > 0) {
+                // (see below for usage)
+                boolean needAllMsgs=true;
+                boolean needWake = !needAllMsgs &&
+                        vertex.isHalted() && hasMessages(vertexId);
+                Iterable<M1> messages=removeMessages(vertexId);
+
+                computeVertex(computation, partition, vertex,
+                        messages);
+                if (needWake) {
+                    // Presence of local messages is NOT reported to master for
+                    // termination check, so we MUST wake up any skipped vertices
+                    // that have local messages to ensure active vertices != 0.
+                    //
+                    // Only needed for AP---BAP will not use barrier when there
+                    // are still local messages. Not needed when needAllMsgs, b/c
+                    // there will always be remote messages.
+                    vertex.wakeUp();
+                }
+
+                if (vertex.isHalted()) {
+                    partitionStats.incrFinishedVertexCount();
+                }
+
+                // Add statistics for this vertex
+                partitionStats.incrVertexCount();
+                partitionStats.addEdgeCount(vertex.getNumEdges());
+
+                verticesComputedProgress++;
+                if (verticesComputedProgress == VERTICES_TO_UPDATE_PROGRESS) {
+                    WorkerProgress.get().addVerticesComputed(verticesComputedProgress);
+                    verticesComputedProgress = 0;
+                }
+            }
+        }
+        WorkerProgress.get().addVerticesComputed(verticesComputedProgress);
+        WorkerProgress.get().incrementPartitionsComputed();
+        return partitionStats;
+    }
+
+
+    private boolean hasMessages(I vertexId) {
+        if (serviceWorker.getSuperstep() == 0) {
+            return false;
+        } else if (asyncConf.needAllMsgs()) {
+            return true;
+        } else {
+            return messageStore.hasMessagesForVertex(vertexId) ||
+                    localMessageStore.hasMessagesForVertex(vertexId);
+        }
+
+    }
+
+
+    private Iterable<M1> removeMessages(I vertexId) throws IOException {
+        Iterable<M1> messages;
+        boolean needAllMsgs=true;
+        // YH: (logical) SS0 is special case for async, b/c many algs send
+        // messages but do not have any logic to process them, so messages
+        // revealed in SS0 gets lost. Hence, keep them until after.
+        if (serviceWorker.getSuperstep() == 0) {
+            messages = EmptyIterable.<M1>get();
+        } else if (needAllMsgs) {
+            // no need to remove, as we always overwrite
+            messages = Iterables.concat(
+                    ( messageStore).
+                            getVertexMessagesWithoutSource(vertexId),
+                    ( localMessageStore).
+                            getVertexMessagesWithoutSource(vertexId));
+        } else {
+            // always remove messages immediately (rather than get and clear)
+            messages = Iterables.concat(
+                    messageStore.removeVertexMessages(vertexId),
+                    localMessageStore.removeVertexMessages(vertexId));
+        }
+
+        return messages;
+    }
 
   /**
-   * Compute a single partition
+   * Compute a single vertex.
    *
    * @param computation Computation to use
-   * @param partition Partition to compute
-   * @return Partition stats for this computed partition
+   * @param vertex Vertex to compute
+   * @param messages Messages for the vertex
+   * @param partition Partition being computed
    */
-  private PartitionStats computePartition(
-      Computation<I, V, E, M1, M2> computation,
-      Partition<I, V, E> partition) throws IOException, InterruptedException {
-    PartitionStats partitionStats =
-        new PartitionStats(partition.getId(), 0, 0, 0, 0, 0);
-    long verticesComputedProgress = 0;
-    // Make sure this is thread-safe across runs
-    synchronized (partition) {
-      for (Vertex<I, V, E> vertex : partition) {
-        Iterable<M1> messages = messageStore.getVertexMessages(vertex.getId());
-        vertex.setPartId(partition.getId());
-        if (vertex.isHalted() && !Iterables.isEmpty(messages)) {
-          vertex.wakeUp();
-        }
-        if (!vertex.isHalted()) {
-          context.progress();
-          LOG.info("BASIO start vertex "+vertex.getFullId()+ "  compute in superstep "+graphState.getSuperstep());
-          computation.compute(vertex, messages);
-          LOG.info("BASIO end vertex "+vertex.getFullId()+ " compute in superstep "+ graphState.getSuperstep());
-
-          // Need to unwrap the mutated edges (possibly)
-          vertex.unwrapMutableEdges();
-          //Compact edges representation if possible
-          if (vertex instanceof Trimmable) {
-            ((Trimmable) vertex).trim();
-          }
-          // Write vertex to superstep output (no-op if it is not used)
-          vertexWriter.writeVertex(vertex);
-          // Need to save the vertex changes (possibly)
-          partition.saveVertex(vertex);
-        }
-        if (vertex.isHalted()) {
-          partitionStats.incrFinishedVertexCount();
-          LOG.info("BASIO halt vertex "+vertex.getFullId()+" comopute  in superstep "+graphState.getSuperstep());
-
-        }
-        // Remove the messages now that the vertex has finished computation
-        messageStore.clearVertexMessages(vertex.getId());
-
-        // Add statistics for this vertex
-        partitionStats.incrVertexCount();
-        partitionStats.addEdgeCount(vertex.getNumEdges());
-
-        verticesComputedProgress++;
-        if (verticesComputedProgress == VERTICES_TO_UPDATE_PROGRESS) {
-          WorkerProgress.get().addVerticesComputed(verticesComputedProgress);
-          verticesComputedProgress = 0;
-        }
-      }
-
-      messageStore.clearPartition(partition.getId());
+  private void computeVertex(
+          Computation<I, V, E, M1, M2> computation,
+          Partition<I, V, E> partition, Vertex<I, V, E> vertex,
+          Iterable<M1> messages) throws IOException, InterruptedException {
+    if (vertex.isHalted() && !Iterables.isEmpty(messages)) {
+      vertex.wakeUp();
     }
-    WorkerProgress.get().addVerticesComputed(verticesComputedProgress);
-    WorkerProgress.get().incrementPartitionsComputed();
-    return partitionStats;
-  }
+    if (!vertex.isHalted()) {
+      context.progress();
+
+      // YH: set source id before compute(), and remove the (stale)
+      // reference immediately after compute() is done. This is
+      // thread-safe as there is one Computation per thread.
+      computation.setCurrentSourceId(vertex.getId());
+      computation.compute(vertex, messages);
+      computation.setCurrentSourceId(null);
+
+      // Need to unwrap the mutated edges (possibly)
+      vertex.unwrapMutableEdges();
+      //Compact edges representation if possible
+      if (vertex instanceof Trimmable) {
+        ((Trimmable) vertex).trim();
+      }
+      // Write vertex to superstep output (no-op if it is not used)
+      vertexWriter.writeVertex(vertex);
+      // Need to save the vertex changes (possibly)
+      partition.saveVertex(vertex);
+    }
 }
 

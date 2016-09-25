@@ -145,8 +145,13 @@ public class NettyWorkerServer<I extends WritableComparable,
     }
     // Keep track of the vertices which are not here but have received messages
     for (Integer partitionId : service.getPartitionStore().getPartitionIds()) {
+
       Iterable<I> destinations = serverData.getCurrentMessageStore().
           getPartitionDestinationVertices(partitionId);
+/*
+      Iterable<I> destinations = serverData.getRemoteMessageStore().
+              getPartitionDestinationVertices(partitionId);
+*/
       if (!Iterables.isEmpty(destinations)) {
         Partition<I, V, E> partition =
             service.getPartitionStore().getOrCreatePartition(partitionId);
