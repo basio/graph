@@ -79,10 +79,11 @@ public class SendWorkerMessagesRequest<I extends WritableComparable,
     if(LOG.isTraceEnabled()) {
       LOG.trace("BASIO doRequest " + serverData.getIncomingMessageStore());
     }
+    MessageStore msgStore= serverData.getRemoteMessageStore(); //ASYNC
     while (iterator.hasNext()) {
       iterator.next();
       try {
-        serverData.getIncomingMessageStore().
+       msgStore.
             addPartitionMessages(iterator.getCurrentFirst(),
                 iterator.getCurrentSecond());
       } catch (IOException e) {
