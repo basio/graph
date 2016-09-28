@@ -283,7 +283,7 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
 
     }
 
-    public Iterable<M> getVertexMessages(MessageStore msgstore, I vertexId)
+    /*public Iterable<M> getVertexMessages(MessageStore msgstore, I vertexId)
             throws IOException {
         ConcurrentMap<I, ConcurrentMap<I, T>> partitionMap =
                 map.get(getPartitionId(vertexId));
@@ -295,7 +295,7 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
         return (srcMap == null) ? EmptyIterable.<M>get() :
                 getMessagesWithoutSourceAsIterable(srcMap);
     }
-
+*/
     private Iterable<M1> removeMessages(I vertexId) throws IOException {
         Iterable<M1> messages;
         boolean needAllMsgs=true;
