@@ -283,6 +283,18 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
 
     }
 
+    public Iterable<M> getVertexMessages(MessageStore msgstore, I vertexId)
+            throws IOException {
+        ConcurrentMap<I, ConcurrentMap<I, T>> partitionMap =
+                map.get(getPartitionId(vertexId));
+        if (partitionMap == null) {
+            return EmptyIterable.<M>get();
+        }
+
+        ConcurrentMap<I, T> srcMap = partitionMap.get(vertexId);
+        return (srcMap == null) ? EmptyIterable.<M>get() :
+                getMessagesWithoutSourceAsIterable(srcMap);
+    }
 
     private Iterable<M1> removeMessages(I vertexId) throws IOException {
         Iterable<M1> messages;
@@ -295,10 +307,8 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
         } else if (needAllMsgs) {
             // no need to remove, as we always overwrite
             messages = Iterables.concat(
-                    ( messageStore).
-                            getVertexMessages(vertexId),
-                    ( localMessageStore).
-                            getVertexMessages(vertexId));
+                            getVertexMessages(messageStore,vertexId),
+                            getVertexMessages(localMessageStore,vertexId));
         } else {
             // always remove messages immediately (rather than get and clear)
             messages = Iterables.concat(

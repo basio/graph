@@ -214,4 +214,18 @@ public abstract class SimpleMessageStore<I extends WritableComparable,
   public void clearAll() throws IOException {
     map.clear();
   }
+
+    @Override
+    public Iterable<M> removeVertexMessages(I vertexId) throws IOException {
+        // Note: this is all thread-safe b/c we're using concurrent map
+        // YH: nearly identical to getVertexMessages...
+        ConcurrentMap<I, T> partitionMap = map.get(getPartitionId(vertexId));
+        if (partitionMap == null) {
+            return EmptyIterable.<M>get();
+        }
+        // ...except that we use remove() instead of get()
+        T messages = partitionMap.remove(vertexId);
+        return (messages == null) ? EmptyIterable.<M>get() :
+                getMessagesAsIterable(messages);
+    }
 }
