@@ -31,6 +31,7 @@ import org.apache.giraph.bsp.CentralizedServiceWorker;
 import org.apache.giraph.factories.MessageValueFactory;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.giraph.utils.EmptyIterable;
 
 /**
  * Abstract class for {@link MessageStore} which allows any kind
@@ -215,7 +216,7 @@ public abstract class SimpleMessageStore<I extends WritableComparable,
     map.clear();
   }
 
-    @Override
+//    @Override
     public Iterable<M> removeVertexMessages(I vertexId) throws IOException {
         // Note: this is all thread-safe b/c we're using concurrent map
         // YH: nearly identical to getVertexMessages...

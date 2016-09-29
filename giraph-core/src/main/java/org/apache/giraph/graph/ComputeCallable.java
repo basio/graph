@@ -355,5 +355,6 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
       // Need to save the vertex changes (possibly)
       partition.saveVertex(vertex);
     }
-}}
+}
+}
 
