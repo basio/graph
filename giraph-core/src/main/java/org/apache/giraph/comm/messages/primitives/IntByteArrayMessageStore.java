@@ -55,6 +55,10 @@ import java.util.List;
  */
 public class IntByteArrayMessageStore<M extends Writable>
     implements MessageStore<IntWritable, M> {
+
+ public Iterable<M> removeVertexMessages(IntWritable vertexId) throws IOException{
+throw new IOException();
+  }
   /** Message value factory */
   protected final MessageValueFactory<M> messageValueFactory;
   /** Map from partition id to map from vertex id to message */

@@ -52,6 +52,11 @@ import com.google.common.collect.Lists;
  */
 public class IntFloatMessageStore
     implements MessageStore<IntWritable, FloatWritable> {
+
+public Iterable<FloatWritable> removeVertexMessages(IntWritable vertexId) throws IOException{
+throw new IOException();
+  }
+
   /** Map from partition id to map from vertex id to message */
   private final Int2ObjectOpenHashMap<Int2FloatOpenHashMap> map;
   /** Message messageCombiner */

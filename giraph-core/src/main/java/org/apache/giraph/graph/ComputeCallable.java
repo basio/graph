@@ -250,8 +250,8 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
 
     private PartitionStats computePartition(
             Computation<I, V, E, M1, M2> computation,
-            Partition<I, V, E> partition,
-            WorkerClientRequestProcessor<I, V, E> workerClientRequestProcessor)
+            Partition<I, V, E> partition)//,
+//            WorkerClientRequestProcessor<I, V, E> workerClientRequestProcessor)
             throws IOException, InterruptedException {
         PartitionStats partitionStats =
                 new PartitionStats(partition.getId(), 0, 0, 0, 0, 0);
@@ -337,8 +337,13 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
         } else if (needAllMsgs) {
             // no need to remove, as we always overwrite
             messages = Iterables.concat(
+<<<<<<< HEAD
                     getVertexMessages(messageStore, vertexId),
                     getVertexMessages(localMessageStore, vertexId));
+=======
+                         messageStore.getVertexMessages(vertexId),
+                           localMessageStore.getVertexMessages(vertexId));
+>>>>>>> 4186ef420e2d3eb1cce685a484843485b1401ad8
         } else {
             // always remove messages immediately (rather than get and clear)
             messages = Iterables.concat(
@@ -387,4 +392,8 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
         }
     }
 }
+<<<<<<< HEAD
+=======
+}
+>>>>>>> 4186ef420e2d3eb1cce685a484843485b1401ad8
 

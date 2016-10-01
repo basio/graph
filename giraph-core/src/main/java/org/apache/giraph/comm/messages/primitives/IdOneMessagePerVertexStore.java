@@ -57,6 +57,10 @@ import com.google.common.collect.Lists;
  */
 public class IdOneMessagePerVertexStore<I extends WritableComparable,
     M extends Writable> implements MessageStore<I, M> {
+
+  public Iterable<M> removeVertexMessages(I vertexId) throws IOException{
+throw new IOException();
+  }
   /** Map from partition id to map from vertex id to message */
   private final Int2ObjectOpenHashMap<Basic2ObjectMap<I, M>> map;
   /** Message value factory */

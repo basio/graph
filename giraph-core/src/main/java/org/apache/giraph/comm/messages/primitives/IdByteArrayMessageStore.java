@@ -57,6 +57,10 @@ import com.google.common.collect.Lists;
  */
 public class IdByteArrayMessageStore<I extends WritableComparable,
     M extends Writable> implements MessageStore<I, M> {
+
+ public Iterable<M> removeVertexMessages(I vertexId) throws IOException{
+throw new IOException();
+  }
   /** Message value factory */
   protected final MessageValueFactory<M> messageValueFactory;
   /** Map from partition id to map from vertex id to message */

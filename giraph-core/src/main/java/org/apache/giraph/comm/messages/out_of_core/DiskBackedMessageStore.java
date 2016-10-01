@@ -47,6 +47,11 @@ import java.util.concurrent.ConcurrentMap;
 public class DiskBackedMessageStore<I extends WritableComparable,
     V extends Writable, E extends Writable, M extends Writable> implements
     MessageStore<I, M> {
+
+public Iterable<M> removeVertexMessages(I vertexId) throws IOException{
+throw new IOException();
+  }
+
   /** Message value factory */
   private final MessageValueFactory<M> messageValueFactory;
   /** Service worker */

@@ -31,6 +31,7 @@ import org.apache.giraph.bsp.CentralizedServiceWorker;
 import org.apache.giraph.factories.MessageValueFactory;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.giraph.utils.EmptyIterable;
 
 /**
  * Abstract class for {@link MessageStore} which allows any kind
