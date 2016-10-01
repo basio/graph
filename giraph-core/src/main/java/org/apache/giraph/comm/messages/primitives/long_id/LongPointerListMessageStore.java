@@ -49,6 +49,11 @@ public class LongPointerListMessageStore<M extends Writable>
   extends LongAbstractListMessageStore<M, LongArrayList>
   implements MessageStore<LongWritable, M> {
 
+
+ public Iterable<M> removeVertexMessages(LongWritable vertexId) throws IOException{
+throw new IOException();
+  }
+
   /** Buffers of byte array outputs used to store messages - thread safe */
   private final ExtendedByteArrayOutputBuffer bytesBuffer;
 

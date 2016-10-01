@@ -22,6 +22,7 @@ import org.apache.giraph.comm.ServerData;
 import org.apache.giraph.utils.VertexIdMessages;
 import org.apache.giraph.utils.ByteArrayVertexIdMessages;
 import org.apache.giraph.utils.PairList;
+import org.apache.giraph.comm.messages.MessageStore;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.log4j.Logger;

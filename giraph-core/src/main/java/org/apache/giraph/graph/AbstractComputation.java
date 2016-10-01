@@ -65,7 +65,8 @@ public abstract class AbstractComputation<I extends WritableComparable,
   private GraphTaskManager<I, V, E> graphTaskManager;
   /** Worker context */
   private WorkerContext workerContext;
-
+ /** Current source id for sent messages */
+  private I srcId;
   /**
    * Must be defined by user to do computation on a single Vertex.
    *
@@ -117,6 +118,7 @@ public abstract class AbstractComputation<I extends WritableComparable,
     this.graphTaskManager = graphTaskManager;
     this.setWorkerGlobalCommUsage(workerGlobalCommUsage);
     this.workerContext = workerContext;
+    this.srcId = null;
   }
 
   /**
@@ -272,5 +274,10 @@ public abstract class AbstractComputation<I extends WritableComparable,
   @Override
   public <W extends WorkerContext> W getWorkerContext() {
     return (W) workerContext;
+  }
+
+ @Override
+  public void setCurrentSourceId(I id) {
+    this.srcId = id;
   }
 }

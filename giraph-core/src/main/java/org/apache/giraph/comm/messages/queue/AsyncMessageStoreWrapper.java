@@ -47,6 +47,10 @@ import java.util.concurrent.Semaphore;
 public final class AsyncMessageStoreWrapper<I extends WritableComparable,
     M extends Writable> implements MessageStore<I, M> {
 
+public Iterable<M> removeVertexMessages(I vertexId) throws IOException{
+throw new IOException();
+  }
+
   /** Logger */
   private static final Logger LOG =
       Logger.getLogger(AsyncMessageStoreWrapper.class);

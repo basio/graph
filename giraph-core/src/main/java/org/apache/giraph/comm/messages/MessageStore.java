@@ -158,7 +158,7 @@ public interface MessageStore<I extends WritableComparable,
    * @return Iterable of messages for a vertex id
    * @throws java.io.IOException
    */
-//  Iterable<M> removeVertexMessages(I vertexId) throws IOException;
+  Iterable<M> removeVertexMessages(I vertexId) throws IOException;
   /**
    * ASYNC: Adds an unserialized message for partition.
    * Caller can invalidate destVertexId or message after the call.

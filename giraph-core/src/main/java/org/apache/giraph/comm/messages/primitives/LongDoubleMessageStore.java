@@ -51,6 +51,10 @@ import com.google.common.collect.Lists;
  */
 public class LongDoubleMessageStore
     implements MessageStore<LongWritable, DoubleWritable> {
+
+public Iterable<DoubleWritable> removeVertexMessages(LongWritable vertexId) throws IOException{
+throw new IOException();
+  }
   /** Map from partition id to map from vertex id to message */
   private final Int2ObjectOpenHashMap<Long2DoubleOpenHashMap> map;
   /** Message messageCombiner */

@@ -119,5 +119,11 @@ public class AsyncMessageStoreWrapperTest {
     public void readFieldsForPartition(DataInput in, int partitionId) throws IOException {
 
     }
+
+    @Override
+
+public Iterable<IntWritable> removeVertexMessages(LongWritable  vertexId) throws IOException{
+throw new IOException();
+  }
   }
 }

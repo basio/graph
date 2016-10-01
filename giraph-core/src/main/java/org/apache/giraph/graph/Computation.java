@@ -204,4 +204,6 @@ public interface Computation<I extends WritableComparable,
    */
   @SuppressWarnings("unchecked")
   <W extends WorkerContext> W getWorkerContext();
+
+void setCurrentSourceId(I id);
 }

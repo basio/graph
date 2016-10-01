@@ -25,6 +25,7 @@ import org.apache.giraph.comm.ServerData;
 import org.apache.giraph.utils.ByteArrayVertexIdMessages;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.giraph.comm.messages.MessageStore;
 
 /**
  * Send a collection of vertex messages for a partition. It adds messages to

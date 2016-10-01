@@ -49,7 +49,9 @@ import java.io.IOException;
  */
 public class LongByteArrayMessageStore<M extends Writable>
   extends LongAbstractMessageStore<M, DataInputOutput> {
-
+ public Iterable<M> removeVertexMessages(LongWritable vertexId) throws IOException{
+throw new IOException();
+  }
   /**
    * Constructor
    *

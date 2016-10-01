@@ -216,7 +216,7 @@ public abstract class SimpleMessageStore<I extends WritableComparable,
     map.clear();
   }
 
-//    @Override
+    @Override
     public Iterable<M> removeVertexMessages(I vertexId) throws IOException {
         // Note: this is all thread-safe b/c we're using concurrent map
         // YH: nearly identical to getVertexMessages...
