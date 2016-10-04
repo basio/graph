@@ -143,7 +143,7 @@ public interface MessageStore<I extends WritableComparable,
    *
    * @return True if we have unprocessed messages
    */
-  //boolean hasMessages();
+  boolean hasMessages();
 
   /**
    * Gets messages for a vertex and removes it from the underlying store.
