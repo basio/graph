@@ -337,13 +337,8 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
         } else if (needAllMsgs) {
             // no need to remove, as we always overwrite
             messages = Iterables.concat(
-<<<<<<< HEAD
-                    getVertexMessages(messageStore, vertexId),
-                    getVertexMessages(localMessageStore, vertexId));
-=======
-                         messageStore.getVertexMessages(vertexId),
-                           localMessageStore.getVertexMessages(vertexId));
->>>>>>> 4186ef420e2d3eb1cce685a484843485b1401ad8
+                    messageStore.getVertexMessages(vertexId),
+                    localMessageStore.getVertexMessages(vertexId));
         } else {
             // always remove messages immediately (rather than get and clear)
             messages = Iterables.concat(
@@ -392,8 +387,6 @@ public class ComputeCallable<I extends WritableComparable, V extends Writable,
         }
     }
 }
-<<<<<<< HEAD
-=======
-}
->>>>>>> 4186ef420e2d3eb1cce685a484843485b1401ad8
+
+
 
