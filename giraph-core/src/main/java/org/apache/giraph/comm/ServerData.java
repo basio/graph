@@ -195,7 +195,9 @@ public class ServerData<I extends WritableComparable,
   /** Prepare for next super step */
   public void prepareSuperstep() {
 
-
+   if(currentMessageStore!=null){
+       log.info("currentmessagestore"+currentMessageStore.)
+   }
       if (currentMessageStore != null) {
           try {
               currentMessageStore.clearAll();
