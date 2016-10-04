@@ -147,7 +147,7 @@ public class NettyWorkerServer<I extends WritableComparable,
     for (Integer partitionId : service.getPartitionStore().getPartitionIds()) {
 
       Iterable<I> destinations = serverData.getCurrentMessageStore().
-          getPartitionDestinationVertices(partitionId);
+          getPartitionDestinationVertices(partitionId); //ASYNC
 /*
       Iterable<I> destinations = serverData.getRemoteMessageStore().
               getPartitionDestinationVertices(partitionId);
