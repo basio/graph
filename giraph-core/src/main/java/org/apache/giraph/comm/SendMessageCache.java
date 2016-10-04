@@ -149,6 +149,7 @@ public class SendMessageCache<I extends WritableComparable, M extends Writable>
       getServiceWorker().getVertexPartitionOwner(destVertexId);
     WorkerInfo workerInfo = owner.getWorkerInfo();
     final int partitionId = owner.getPartitionId();
+    LOG.info("send message request");
     if (LOG.isTraceEnabled()) {
       LOG.info("BASIO sendMessageRequest: Send bytes (" + message.toString() +
         ") to " + destVertexId + " on worker " + workerInfo);
@@ -159,7 +160,7 @@ public class SendMessageCache<I extends WritableComparable, M extends Writable>
       workerInfo, partitionId, destVertexId, message);
     // Send a request if the cache of outgoing message to
     // the remote worker 'workerInfo' is full enough to be flushed
-    boolean forced=true;
+    boolean forced=false;
     if (forced==true)
 	{
 //      LOG.info("Force BASIO sendMessageBatch");

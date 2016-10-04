@@ -194,34 +194,36 @@ public class ServerData<I extends WritableComparable,
 
   /** Prepare for next super step */
   public void prepareSuperstep() {
-    if (currentMessageStore != null) {
-      try {
-        currentMessageStore.clearAll();
-      } catch (IOException e) {
-        throw new IllegalStateException(
-            "Failed to clear previous message store");
+
+
+      if (currentMessageStore != null) {
+          try {
+              currentMessageStore.clearAll();
+          } catch (IOException e) {
+              throw new IllegalStateException(
+                      "Failed to clear previous message store");
+          }
       }
-    }
-    currentMessageStore =
-        incomingMessageStore != null ? incomingMessageStore :
-            messageStoreFactory.newStore(conf.getIncomingMessageValueFactory());
-    incomingMessageStore =
-        messageStoreFactory.newStore(conf.getOutgoingMessageValueFactory());
-    // finalize current message-store before resolving mutations
-    currentMessageStore.finalizeStore();
-
-    currentWorkerToWorkerMessages = incomingWorkerToWorkerMessages;
-    incomingWorkerToWorkerMessages =
-        Collections.synchronizedList(new ArrayList<Writable>());
-
-     if (remoteMessageStore == null) {
-              remoteMessageStore =
+      currentMessageStore =
+              incomingMessageStore != null ? incomingMessageStore :
                       messageStoreFactory.newStore(conf.getIncomingMessageValueFactory());
-          }
-          if (localMessageStore == null) {
-              localMessageStore =
-                      messageStoreFactory.newStore(conf.getIncomingMessageValueFactory());
-          }
+      incomingMessageStore =
+              messageStoreFactory.newStore(conf.getOutgoingMessageValueFactory());
+      // finalize current message-store before resolving mutations
+      currentMessageStore.finalizeStore();
+
+      currentWorkerToWorkerMessages = incomingWorkerToWorkerMessages;
+      incomingWorkerToWorkerMessages =
+              Collections.synchronizedList(new ArrayList<Writable>());
+
+      if (remoteMessageStore == null) {
+          remoteMessageStore =
+                  messageStoreFactory.newStore(conf.getIncomingMessageValueFactory());
+      }
+      if (localMessageStore == null) {
+          localMessageStore =
+                  messageStoreFactory.newStore(conf.getIncomingMessageValueFactory());
+      }
 
   }
 
